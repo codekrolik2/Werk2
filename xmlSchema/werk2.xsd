@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.0" vc:maxVersion="1.1">
+    <xs:simpleType name="type" final="restriction">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="LONG"/>
+            <xs:enumeration value="DOUBLE"/>
+            <xs:enumeration value="BOOL"/>
+            <xs:enumeration value="STRING"/>
+
+            <xs:enumeration value="LIST"/>
+            <xs:enumeration value="DICTIONARY"/>
+
+            <xs:enumeration value="STEP_NAME"/>
+            <xs:enumeration value="RUNTIME"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="event" final="restriction">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="FLOW_STARTED"/>
+            <xs:enumeration value="FLOW_FINISHED"/>
+            <xs:enumeration value="STEP_STARTED"/>
+            <xs:enumeration value="STEP_FINISHED"/>
+            <xs:enumeration value="EXECUTOR_BLOCK_STARTED"/>
+            <xs:enumeration value="EXECUTOR_BLOCK_FINISHED"/>
+            <xs:enumeration value="EXECUTOR_STARTED"/>
+            <xs:enumeration value="EXECUTOR_FINISHED"/>
+            <xs:enumeration value="TRANSITIONER_STARTED"/>
+            <xs:enumeration value="TRANSITIONER_FINISHED"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="parameter">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="type" type="type" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="parameters">
+        <xs:sequence>
+            <xs:element maxOccurs="unbounded" name="parameter" type="parameter" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="function_signature">
+        <xs:sequence>
+            <xs:element name="in_parameters" type="parameters" minOccurs="0"/>
+            <xs:element name="out_parameters" type="parameters" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="function">
+        <xs:sequence>
+            <xs:element name="signature" type="function_signature" maxOccurs="unbounded"
+                minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="function_name" type="xs:string"/>
+    </xs:complexType>
+    <xs:complexType name="in_binding">
+        <xs:sequence>
+            <xs:element name="from_field" type="xs:string"/>
+            <xs:element name="to_in_parameter" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="out_binding">
+        <xs:sequence>
+            <xs:element name="from_out_parameter" type="xs:string"/>
+            <xs:element name="to_field" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="status_binding">
+        <xs:sequence>
+            <xs:element name="status_to_field" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="call">
+        <xs:sequence>
+            <xs:element minOccurs="0" name="in_parameters">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element maxOccurs="unbounded" minOccurs="0" name="param"
+                            type="in_binding"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element minOccurs="0" name="out_parameters">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element maxOccurs="unbounded" minOccurs="0" name="param"
+                            type="out_binding"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element minOccurs="0" name="status" type="status_binding"/>
+            <xs:element minOccurs="0" name="transition_status" type="status_binding"/>
+        </xs:sequence>
+        <xs:attribute name="function_name" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:complexType name="listener_call">
+        <xs:sequence>
+            <xs:element name="event" type="event"/>
+            <xs:element name="call" type="call"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="listeners">
+        <xs:sequence>
+            <xs:element name="listener_call" type="listener_call" maxOccurs="unbounded"
+                minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="executor">
+        <xs:sequence>
+            <xs:element name="function" type="function"/>
+            <xs:element minOccurs="0" name="listeners" type="listeners"> </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="transitioner">
+        <xs:sequence>
+            <xs:element name="function" type="function"/>
+            <xs:element name="listeners" type="listeners" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="step">
+        <xs:sequence>
+            <xs:element name="function" type="function"/>
+            <xs:element minOccurs="0" name="executor_block">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element maxOccurs="unbounded" minOccurs="0" name="executor" type="call"
+                        />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="transitioner" type="call"/>
+            <xs:element name="listeners" type="listeners" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="flow">
+        <xs:sequence>
+            <xs:element name="flow_name" type="xs:string"/>
+            <xs:element name="function" type="function"/>
+            <xs:element name="steps">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="step" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="step_name" type="xs:string"/>
+                                    <xs:element name="is_first" type="xs:boolean" minOccurs="0"/>
+                                    <xs:element name="call" type="call"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="listeners" type="listeners" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="engine_parameter">
+        <xs:sequence>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="value" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="engine">
+        <xs:sequence>
+            <xs:element minOccurs="0" name="engine_parameters">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element maxOccurs="unbounded" minOccurs="0" name="param"
+                            type="engine_parameter"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element minOccurs="0" name="listeners" type="listeners"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="werk2">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="engine" type="engine"/>
+                <xs:element name="flows" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="flow" type="flow" maxOccurs="unbounded" minOccurs="0"
+                            />
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="steps" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="step" type="step" maxOccurs="unbounded" minOccurs="0"
+                            />
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="executors" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="executor" type="executor" maxOccurs="unbounded"
+                                minOccurs="0"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="transitioners" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element maxOccurs="unbounded" minOccurs="0" name="transitioner"
+                                type="transitioner"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="listeners" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element maxOccurs="unbounded" minOccurs="0" name="listener"
+                                type="function"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+
+    </xs:element>
+</xs:schema>

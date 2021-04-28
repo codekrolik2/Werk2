@@ -11,18 +11,18 @@ sequenceDiagram
     loop Steps
 	Note over Flow: event: StepStarted
 	Flow->>Step: start Step
-	loop Self-transition
+		Note over Step: event: ExecutorBlockStarted
 		loop Executors
 			Note over Step: event: ExecutorStarted
 			Step->>Executor: start Executor
 			Executor->>Step: Executor finished
 			Note over Step: event: ExecutorFinished
 		end
+		Note over Step: event: ExecutorBlockFinished
 		Note over Step: event: TransitionerStarted
 		Step->>Transitioner: start Transitioner
 		Transitioner->>Step: Transitioner finished
 		Note over Step: event: TransitionerFinished
-	end
 	Step->>Flow: Step finished, transition or exit
 	Note over Flow: event: StepFinished
     end
@@ -34,14 +34,16 @@ Below are the FlowStateEvents by level for which FlowStateEventListeners could b
     Engine-level: no events
     Flow-level: FlowStarted, FlowFinished
     Step-level: StepStarted, StepFinished
+    ExecutorBlock-level: ExecutorBlockStarted, ExecutorBlockFinished
     Executor-level: ExecutorStarted, ExecutorFinished
     Executor-level: TransitionerStarted, TransitionerFinished
-Definition hierarchy looks as the following: 
+Definition hierarchy is as the following: 
 ```mermaid
 graph LR
     Engine --> Flow
     Flow --> Step
-    Step --> Executor
+    Step --> ExecutorBlock --> Executor
+    Step --> Transitioner
 ```
 Listeners can be defined on different levels of hierarchy, i.e. `Step-level` can contain definitions that will be used by all underlying `Executors` and `Transitioners`, `Flow-level` can bind listeners to all underlying `Steps`, `Executors` and `Transitioners`. In other words, each level of hierarchy can bind listeners to its events and to events on lower levels. In practical sense it allows to easily define a variety of logic, notably logging, monitoring, or Flow Persistence. Importantly, in Werk2 Flow Persistence is not a first-class citizen, but simply a set of blocking listeners.   
 
@@ -67,10 +69,90 @@ split --> NonBlocking_1 --> end_1
 split --> NonBlocking_2 --> end_2
 split --> NonBlocking_N --> end_N
 ```
-By `unit` I mean a synchronous executable block - either an Executor, a Transitioner or a block of Listeners bound to the same event.
+By `unit` I mean a synchronous executable block - either an Executor, a Transitioner or a block of Listeners bound to the same event. At any given moment in time only one such unit may exists and is be executed per Flow.
 
-## Parameters and visibility
-There are two types of parameters - Serializable and Runtime.
+## Fields and visibility
+There are two types of fields - Serializable Fields and Runtime Fields.
 Serialization of flows can be useful for a few reasons, including moving Flow instances between servers and persisting flow instances in Storage.
-Serializable are restricted to types and structure mimicking JSON structure, but not equivalent to JSON due to the fact that the actual serialization for persistence may vary.
+Serializable Fields are restricted to types and structure mimicking JSON structure, but not equivalent to JSON document due to the fact that the actual serialization for persistence may vary. Typing of Serializable Fields is obvious from the following enumeration.
 
+    public enum FieldType {
+    	LONG,
+    	DOUBLE,
+    	BOOL,
+    	STRING,
+    	
+    	LIST,
+    	DICTIONARY
+    }
+
+Runtime Fields can be of any type allowed in underlying language, including the types that are associated with Serializable Fields. The difference between the two is that Fields marked as Serializable will be serialized, while Runtime Fields will be omitted and therefore lost.
+
+Visibility can be explained by analogy using the following example in Java, where classes Flow, Step, Executor and Transitioner denote Werk2 entities:
+
+    public class Flow {
+    	//Can only see own (Flow) Fields
+    	int flow_int = 15;
+    	boolean flow_bool = true;
+    	
+    	//Cannot do this
+    	//int flow_int2 = step_int;
+    	
+    	class Step {
+    		//Can see Flow and own (Step) Fields
+    		int step_int = flow_int;
+    		boolean step_bool = false;
+    		
+    		//Cannot do this
+    		//int step_int2 = executor1_int;
+    		//int step_int2 = executor2_int;
+    		//int step_int2 = transitioner_int;
+    		
+    		class Executor1 {
+    			//Can see Flow, Step and own (Executor1) Fields
+    			int executor1_int = flow_int;
+    			boolean executor1_bool= step_bool;
+    			
+    			//Cannot do this:
+    			//int executor1_int2 = executor2_int;
+    			//int executor1_int2 = transitioner_int;
+    		}
+    		
+    		class Executor2 {
+    			//Can see Flow, Step and own (Executor2) Fields
+    			int executor2_int = step_int;
+    			boolean executor2_bool= flow_bool;
+    			
+    			//Cannot do this:
+    			//int executor2_int2 = executor1_int;
+    			//int executor2_int2 = transitioner_int;
+    		}
+    		
+    		class Transitioner {
+    			//Can see Flow, Step and own (Transitioner) Fields
+    			int transitioner_int = step_int;
+    			boolean transitioner_bool= flow_bool;
+    			
+    			//Cannot do this:
+    			//int transitioner_int2 = executor1_int;
+    			//int transitioner_int2 = executor2_int2;
+    		}
+    	}
+    }
+
+Visibility of Fields to Listeners depends on the level of corresponding event.
+
+## Function calls
+All Werk2 entities, which are - Flow, Step, Executor, Transitioner and Listener - are parametrized functions that return integer status. They define one or more call signatures, i.e. input parameters and output parameters.
+Werk2 configuration defines signatures for all entities, and when entity becomes a part of composition - the actual call. E.g. if an Executor1 has the following signature: 
+`executor1(in: int i1, int i2, String s; out: boolean b, List l);`
+and Executor1 is a part of Step1, Step1 should define how exactly Executor1 will be called in its context, along the lines of:
+`Step1.exec1Code = executor1(in: Step1.num1, 35, Step1.description; out: Step1.isExec1Successful, Step1.exec1Findings);`
+As you can see, input parameters may be set to caller's fields or constants.
+One special type of constants is "STEP_NAME", which takes a pre-validated step name to perform transitions. It's value should be validated on engine load.
+TODO: Ideally step name should be injected from Flow level? again, Ideally Step shouldn't know anything about other Steps.
+
+Setting input parameters means de facto initializing corresponding callee's fields to those values. When a function call returns, values of output parameters and status can be used to set caller's fields. Thus, from perspective of implementation there is no "parameters" in physical sense, just values of fields of callee are being assigned values of caller's fields before call, and the other way around after the call is done.
+The same Field assignment procedure will be performed when a Flow start a Step, but the difference would be that no code will be executed, because Step by itself is a composite entity. And, finally, Flow's fields are assigned once on creation of Flow instance by an external actor.
+Non-Blocking Listeners can't have out parameters and their status code is always ignored.
+Blocking and Synchronized Listeners can be configured to abort their Flow Instance on returning a certain status, as well as set/update parameters of a corresponding Entity.
