@@ -6,6 +6,7 @@
   <packaging>pom</packaging>
   <modules>
   	<module>Werk2Core</module>
+  	<module>Werk2XMLConfig</module>
   </modules>
   
   <properties>
@@ -17,6 +18,13 @@
   	<lombok.version>1.16.16</lombok.version>
   	<log4j.version>1.2.16</log4j.version>
   </properties>
+
+	<repositories>
+		<repository>
+			<id>EclipseLink</id>
+			<url>http://download.eclipse.org/rt/eclipselink/maven.repo</url>
+		</repository>
+	</repositories>
   
   <dependencyManagement>
     <dependencies>

@@ -1,0 +1,45 @@
+Notes w2
+
+++ 20) executors default sync
+
+
+1) visual graph output in md with mermaid
+6) flow id is a field? Probably not becuase Id is needed to express parent-child relationship
+7) parallelism on different machines with and without persistence
+11) autowrap in step and flow for calls??
+16) listeners can run flows but nested listeners will be ignored
+19) asynchronous execution (callbacks) + manual child flow spawn and control
+
+--------------------------------------------------------------------
+
+10.1) in a batch of functions all should return success unless configured otherwise. ??
+
+Listener definitions on Flow/Step level - can they or can't they refer to Executor fields (RO input)?
+	- special constants like execution time?
+Listener definitions on Executor level - can they or can't they refer to Flow/Step fields (RO input)?
+
+The answer in preliminary doc is that they can, but this needs to be thought through
+
+Maybe use prefixes:
+E:engineName - Engine field
+F:actionId - Flow field
+S:userName - Step field
+Now, come to think of it, Executor/Transitioner/Listener have no fields.
+Speculation about fields should be accepted with warning - runtime error is possible.
+
+The following is possible to do with engine-level injection, but also with special parameter types:
+	*) For persistence Flow serialization should be available to listeners (SERIALIZER)
+	*) For running network requests on Vertx some engine context should be available to listeners (ENGINE_CONTEXT)
+
+18) special parameters - step,flow,executor - (??? is a function name???)
+
+8) call any function as a flow and any flow as a function
+
+--------------------------------------------------------------------
+
+Step can put exec/transit/step/flow or raw functions in exec or transit, if listeners/overides don't matter or are defined at step level.
+- if step function used as an executor will try to transit to a different step, that would be end of execution and transition status will be dropped.
+- if step function used as a transitioner will try to transit, that will be considered as transitioner trying to transit.
+
+Flow can put steps or transits or raw transit function to define first step/steps.
+
