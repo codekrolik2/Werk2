@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="config" type="xmlWerk2Config"/>
+
+  <xs:complexType name="extendedFlow">
+    <xs:sequence>
+      <xs:element name="superStepFunctionName" type="xs:string"/>
+      <xs:element name="newFunctionName" type="xs:string"/>
+      <xs:element name="addSignature" type="signature" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="dropOldSignatures" type="xs:boolean" default="false" minOccurs="0"/>
+      <xs:element name="newFirstStep" type="call" minOccurs="0"/>
+      <xs:element name="addStep" type="call" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="dropOldSteps" type="xs:boolean" default="false" minOccurs="0"/>
+      <xs:element name="addListener" type="listener" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="dropOldListeners" type="xs:boolean" default="false" minOccurs="0"/>
+      <xs:element name="newOverrideListeners" type="xs:boolean" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="signature">
+    <xs:sequence>
+      <xs:element name="inParameter" type="prm" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="outParameter" type="prm" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="prm">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string"/>
+      <xs:element name="type" type="type"/>
+      <xs:element name="runtimeType" type="xs:string" minOccurs="0"/>
+      <xs:element name="pass" type="pass" default="BY_REF" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="call">
+    <xs:sequence>
+      <xs:element name="functionName" type="xs:string"/>
+      <xs:element name="inParameter" type="in" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="outParameter" type="out" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="outStatus" type="xs:string" minOccurs="0"/>
+      <xs:element name="outStatusMessage" type="xs:string" minOccurs="0"/>
+      <xs:element name="outTransitionStatus" type="xs:string" minOccurs="0"/>
+      <xs:element name="concurrency" type="concurrency" default="SYNCHRONIZED" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="in">
+    <xs:sequence>
+      <xs:element name="fromField" type="xs:string"/>
+      <xs:element name="toInParameter" type="xs:string"/>
+      <xs:element name="constValue" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="out">
+    <xs:sequence>
+      <xs:element name="fromOutParameter" type="xs:string"/>
+      <xs:element name="toField" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="listener">
+    <xs:complexContent>
+      <xs:extension base="batchCall">
+        <xs:sequence>
+          <xs:element name="event" type="event" maxOccurs="unbounded"/>
+          <xs:element name="functionNameRegex" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="batchCall">
+    <xs:sequence>
+      <xs:element name="call" type="call" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="batch" type="batchCall" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="extendedStep">
+    <xs:sequence>
+      <xs:element name="superStepFunctionName" type="xs:string"/>
+      <xs:element name="newFunctionName" type="xs:string"/>
+      <xs:element name="addSignature" type="signature" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="dropOldSignatures" type="xs:boolean" default="false" minOccurs="0"/>
+      <xs:element name="addExecBlock" type="batchCall" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="dropOldExecs" type="xs:boolean" default="false" minOccurs="0"/>
+      <xs:element name="newTransit" type="call" minOccurs="0"/>
+      <xs:element name="addListener" type="listener" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="dropOldListeners" type="xs:boolean" default="false" minOccurs="0"/>
+      <xs:element name="newOverrideListeners" type="xs:boolean" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="function">
+    <xs:sequence>
+      <xs:element name="functionName" type="xs:string"/>
+      <xs:element name="signature" type="signature" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="engine">
+    <xs:sequence>
+      <xs:element name="parameter" type="engine_prm" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="listener" type="listener" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="engine_prm">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string"/>
+      <xs:element name="value" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="transit">
+    <xs:sequence>
+      <xs:element name="transitFunctionName" type="xs:string"/>
+      <xs:element name="rawFunctionName" type="xs:string"/>
+      <xs:element name="listener" type="listener" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="overrideListeners" type="xs:boolean" default="false" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="flow">
+    <xs:sequence>
+      <xs:element name="function" type="function"/>
+      <xs:element name="firstStep" type="call"/>
+      <xs:element name="step" type="call" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="listener" type="listener" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="overrideListeners" type="xs:boolean" default="false" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="xmlWerk2Config">
+    <xs:sequence>
+      <xs:element name="engine" type="engine" minOccurs="0"/>
+      <xs:element name="flow" type="flow" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="step" type="step" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="exec" type="exec" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="transit" type="transit" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="rawFunction" type="function" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="step">
+    <xs:sequence>
+      <xs:element name="function" type="function"/>
+      <xs:element name="execBlock" type="batchCall" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="transit" type="call"/>
+      <xs:element name="listener" type="listener" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="overrideListeners" type="xs:boolean" default="false" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="exec">
+    <xs:sequence>
+      <xs:element name="execFunctionName" type="xs:string"/>
+      <xs:element name="rawFunctionName" type="xs:string"/>
+      <xs:element name="listener" type="listener" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="overrideListeners" type="xs:boolean" default="false" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="event">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="FLOW_STARTED"/>
+      <xs:enumeration value="FLOW_FINISHED"/>
+      <xs:enumeration value="STEP_STARTED"/>
+      <xs:enumeration value="STEP_FINISHED"/>
+      <xs:enumeration value="EXECUTOR_STARTED"/>
+      <xs:enumeration value="EXECUTOR_FINISHED"/>
+      <xs:enumeration value="TRANSITIONER_STARTED"/>
+      <xs:enumeration value="TRANSITIONER_FINISHED"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="type">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="LONG"/>
+      <xs:enumeration value="DOUBLE"/>
+      <xs:enumeration value="BOOL"/>
+      <xs:enumeration value="STRING"/>
+      <xs:enumeration value="BYTES"/>
+      <xs:enumeration value="LIST"/>
+      <xs:enumeration value="DICTIONARY"/>
+      <xs:enumeration value="RUNTIME"/>
+      <xs:enumeration value="STEP"/>
+      <xs:enumeration value="FUNCTION"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="pass">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="BY_REF"/>
+      <xs:enumeration value="BY_VAL"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="concurrency">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="NON_BLOCKING"/>
+      <xs:enumeration value="BLOCKING"/>
+      <xs:enumeration value="SYNCHRONIZED"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>
+
