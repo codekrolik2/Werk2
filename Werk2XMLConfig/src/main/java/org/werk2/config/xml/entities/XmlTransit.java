@@ -11,11 +11,11 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class XmlTransit {
 	@XmlElement(required = true)
-	protected String transitFunctionName;
+	public String transitFunctionName;
 	@XmlElement(required = true)
-	protected String rawFunctionName;
+	public String rawFunctionName;
 	@XmlElement(required = false)
-    protected List<XmlListenerCall> listener;
+    public List<XmlListenerCall> listener;
 	@XmlElement(required = false, defaultValue = "false")
-    protected Boolean overrideListeners;
+    public Boolean overrideListeners;
 }

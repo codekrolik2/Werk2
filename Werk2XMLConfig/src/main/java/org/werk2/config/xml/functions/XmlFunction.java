@@ -11,7 +11,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class XmlFunction {
 	@XmlElement(required = true)
-	protected String functionName;
+	public String functionName;
 	@XmlElement(required = true)
-	protected List<XmlFunctionSignature> signature;
+	public List<XmlFunctionSignature> signature;
 }

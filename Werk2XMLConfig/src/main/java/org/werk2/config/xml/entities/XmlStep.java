@@ -15,14 +15,14 @@ import org.werk2.config.xml.functions.XmlFunction;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class XmlStep {
 	@XmlElement(required = true)
-    protected XmlFunction function;
+    public XmlFunction function;
 	@XmlElement(required = false)
-    protected List<XmlBatchCall> execBlock;
+    public List<XmlBatchCall> execBlock;
 	@XmlElement(required = true)
-    protected XmlCall transit;
+    public XmlCall transit;
 
 	@XmlElement(required = false)
-    protected List<XmlListenerCall> listener;
+    public List<XmlListenerCall> listener;
 	@XmlElement(required = false, defaultValue = "false")
-    protected Boolean overrideListeners;
+    public Boolean overrideListeners;
 }

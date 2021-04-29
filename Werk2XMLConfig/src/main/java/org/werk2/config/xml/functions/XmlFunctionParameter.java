@@ -9,11 +9,11 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class XmlFunctionParameter {
 	@XmlElement(required = true)
-	protected String name;
+	public String name;
 	@XmlElement(required = true)
-	protected TypeXml type;
+	public TypeXml type;
 	@XmlElement(required = false)
-	protected String runtimeType;
+	public String runtimeType;
 	@XmlElement(required = false, defaultValue = "BY_REF")
-	protected XmlParameterPassing pass;
+	public XmlParameterPassing pass;
 }

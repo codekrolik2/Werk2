@@ -9,7 +9,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class XmlOutBinding {
 	@XmlElement(required = true)
-    protected String fromOutParameter;
+    public String fromOutParameter;
 	@XmlElement(required = true)
-    protected String toField;
+    public String toField;
 }

@@ -18,15 +18,15 @@ import org.werk2.config.xml.functions.XmlFunction;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class XmlWerk2Config {
 	@XmlElement(required = false)
-    protected XmlEngine engine;
+    public XmlEngine engine;
 	@XmlElement(required = false)
-    protected List<XmlFlow> flow;
+    public List<XmlFlow> flow;
 	@XmlElement(required = false)
-    protected List<XmlStep> step;
+    public List<XmlStep> step;
 	@XmlElement(required = false)
-    protected List<XmlExec> exec;
+    public List<XmlExec> exec;
 	@XmlElement(required = false)
-    protected List<XmlTransit> transit;
+    public List<XmlTransit> transit;
 	@XmlElement(required = false)
-    protected List<XmlFunction> rawFunction;
+    public List<XmlFunction> rawFunction;
 }

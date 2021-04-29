@@ -11,17 +11,17 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class XmlCall {
 	@XmlElement(required = true)
-    protected String functionName;
+    public String functionName;
 	@XmlElement(required = false)
-    protected List<XmlInBinding> inParameter;
+    public List<XmlInBinding> inParameter;
 	@XmlElement(required = false)
-    protected List<XmlOutBinding> outParameter;
+    public List<XmlOutBinding> outParameter;
 	@XmlElement(required = false)
-    protected String outStatus;
+    public String outStatus;
 	@XmlElement(required = false)
-    protected String outStatusMessage;
+    public String outStatusMessage;
 	@XmlElement(required = false)
-    protected String outTransitionStatus;
+    public String outTransitionStatus;
 	@XmlElement(required = false, defaultValue = "SYNCHRONIZED")
-    protected XmlConcurrency concurrency;
+    public XmlConcurrency concurrency;
 }

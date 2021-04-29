@@ -13,7 +13,7 @@ import org.werk2.config.xml.calls.XmlBatchCall;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class XmlListenerCall extends XmlBatchCall {
 	@XmlElement(required = true)
-    protected List<XmlEvent> event;
+    public List<XmlEvent> event;
 	@XmlElement(required = false)
-    protected String functionNameRegex;
+    public String functionNameRegex;
 }

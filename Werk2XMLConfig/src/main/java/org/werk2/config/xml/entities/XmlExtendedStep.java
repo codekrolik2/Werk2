@@ -15,28 +15,28 @@ import org.werk2.config.xml.functions.XmlFunctionSignature;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class XmlExtendedStep {
 	@XmlElement(required = true)
-	protected String superStepFunctionName;
+	public String superStepFunctionName;
 	@XmlElement(required = true)
-	protected String newFunctionName;
+	public String newFunctionName;
 	
 	@XmlElement(required = false)
-	protected List<XmlFunctionSignature> addSignature;
+	public List<XmlFunctionSignature> addSignature;
 	@XmlElement(required = false, defaultValue = "false")
-	protected Boolean dropOldSignatures;
+	public Boolean dropOldSignatures;
 	
 	@XmlElement(required = false)
-    protected List<XmlBatchCall> addExecBlock;
+    public List<XmlBatchCall> addExecBlock;
 	@XmlElement(required = false, defaultValue = "false")
-	protected Boolean dropOldExecs;
+	public Boolean dropOldExecs;
 
 	@XmlElement(required = false)
-    protected XmlCall newTransit;
+    public XmlCall newTransit;
 
 	@XmlElement(required = false)
-    protected List<XmlListenerCall> addListener;
+    public List<XmlListenerCall> addListener;
 	@XmlElement(required = false, defaultValue = "false")
-    protected Boolean dropOldListeners;
+    public Boolean dropOldListeners;
     
 	@XmlElement(required = false)
-    protected Boolean newOverrideListeners;
+    public Boolean newOverrideListeners;
 }

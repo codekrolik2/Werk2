@@ -13,7 +13,7 @@ import org.werk2.config.xml.entities.XmlListenerCall;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class XmlEngine {
 	@XmlElement(required = false)
-    protected List<XmlEngineParameter> parameter;
+    public List<XmlEngineParameter> parameter;
 	@XmlElement(required = false)
-    protected List<XmlListenerCall> listener;
+    public List<XmlListenerCall> listener;
 }

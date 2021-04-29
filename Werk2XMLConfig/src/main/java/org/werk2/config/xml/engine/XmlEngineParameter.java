@@ -9,7 +9,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class XmlEngineParameter {
 	@XmlElement(required = true)
-	protected String name;
+	public String name;
 	@XmlElement(required = true)
-	protected String value;
+	public String value;
 }

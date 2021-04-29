@@ -11,7 +11,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class XmlBatchCall {
 	@XmlElement(required = false)
-    protected List<XmlCall> call;
+    public List<XmlCall> call;
 	@XmlElement(required = false)
-    protected List<XmlBatchCall> batch;
+    public List<XmlBatchCall> batch;
 }

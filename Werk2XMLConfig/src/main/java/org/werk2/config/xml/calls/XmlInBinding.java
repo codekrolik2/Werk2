@@ -9,9 +9,9 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class XmlInBinding {
 	@XmlElement(required = true)
-	protected String fromField;
+	public String fromField;
 	@XmlElement(required = true)
-	protected String toInParameter;
+	public String toInParameter;
 	@XmlElement(required = false)
-	protected String constValue;
+	public String constValue;
 }
