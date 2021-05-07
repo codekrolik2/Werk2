@@ -1,4 +1,10 @@
+VUnit
+ephemeral vertex aka ephemeral node
+
 Notes w2
+
+A flow is a console app
+A flow is a REST method
 
 ++ 20) executors default sync
 
@@ -42,4 +48,3 @@ Step can put exec/transit/step/flow or raw functions in exec or transit, if list
 - if step function used as a transitioner will try to transit, that will be considered as transitioner trying to transit.
 
 Flow can put steps or transits or raw transit function to define first step/steps.
-
