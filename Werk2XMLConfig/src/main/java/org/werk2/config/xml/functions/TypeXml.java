@@ -3,6 +3,8 @@ package org.werk2.config.xml.functions;
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlType;
 
+import org.werk2.config.functions.ParameterType;
+
 @XmlType(name = "type")
 @XmlEnum
 public enum TypeXml {
@@ -29,5 +31,21 @@ public enum TypeXml {
     
     public static TypeXml fromValue(String v) {
         return valueOf(v);
+    }
+    
+    public static ParameterType toParameterType(TypeXml type) {
+    	switch (type) {
+	    	case LONG : return ParameterType.LONG;
+	    	case DOUBLE : return ParameterType.DOUBLE;
+	    	case BOOL : return ParameterType.BOOL;
+	    	case STRING : return ParameterType.STRING;
+	    	case BYTES : return ParameterType.BYTES;
+	    	case LIST : return ParameterType.LIST;
+	    	case DICTIONARY : return ParameterType.DICTIONARY;
+	    	case RUNTIME : return ParameterType.RUNTIME;
+	    	case STEP : return ParameterType.STEP;
+	    	//case FUNCTION
+    		default : return ParameterType.FUNCTION;
+    	}
     }
 }

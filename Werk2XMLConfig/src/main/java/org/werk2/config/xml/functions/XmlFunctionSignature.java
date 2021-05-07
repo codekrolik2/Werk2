@@ -7,6 +7,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.werk2.config.xml.XmlDocEntry;
+
 @XmlType(name = "signature")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class XmlFunctionSignature {
@@ -14,4 +16,7 @@ public class XmlFunctionSignature {
     public List<XmlFunctionParameter> inParameter;
 	@XmlElement(required = false)
     public List<XmlFunctionParameter> outParameter;
+
+	@XmlElement(required = false)
+    public XmlDocEntry doc;
 }
