@@ -7,6 +7,7 @@
   <modules>
   	<module>Werk2Core</module>
   	<module>Werk2XMLConfig</module>
+  	<module>Werk2Config</module>
   </modules>
   
   <properties>
@@ -28,6 +29,16 @@
   
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>org.werk2</groupId>
+        <artifactId>Werk2Config</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.werk2</groupId>
+        <artifactId>Werk2XMLConfig</artifactId>
+        <version>${project.version}</version>
+      </dependency>
       <dependency>
         <groupId>org.werk2</groupId>
         <artifactId>Werk2Core</artifactId>

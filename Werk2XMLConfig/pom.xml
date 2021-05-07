@@ -11,7 +11,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.werk2</groupId>
-			<artifactId>Werk2Core</artifactId>
+			<artifactId>Werk2Config</artifactId>
 		</dependency>
 		
 		<dependency>
