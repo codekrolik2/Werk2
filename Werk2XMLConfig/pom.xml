@@ -10,6 +10,11 @@
 	<artifactId>Werk2XMLConfig</artifactId>
 	<dependencies>
 		<dependency>
+			<groupId>org.werk2</groupId>
+			<artifactId>Werk2Core</artifactId>
+		</dependency>
+		
+		<dependency>
 			<groupId>javax.activation</groupId>
 			<artifactId>activation</artifactId>
 			<version>1.1.1</version>
