@@ -7,6 +7,15 @@
   </parent>
   <artifactId>Werk2Core</artifactId>
   <dependencies>
+		<dependency>
+			<groupId>org.werk2</groupId>
+			<artifactId>Werk2Config</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-core</artifactId>
+		</dependency>
+		
   	<dependency>
   		<groupId>org.projectlombok</groupId>
   		<artifactId>lombok</artifactId>
