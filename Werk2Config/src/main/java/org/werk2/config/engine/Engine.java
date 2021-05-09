@@ -14,9 +14,9 @@ public interface Engine extends Documented {
 	/**
 	 * @return Engine parameters
 	 */
-    public Optional<List<EngineParameter>> getParameters();
+    public Optional<? extends List<? extends EngineParameter>> getParameters();
     /**
      * @return Engine-level listener bindings
      */
-    public Optional<List<ListenerCall>> getListeners();
+    public Optional<? extends List<? extends ListenerCall>> getListeners();
 }

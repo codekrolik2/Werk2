@@ -1,6 +1,7 @@
 package org.werk2.config.functions;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.werk2.config.Documented;
 
@@ -15,7 +16,11 @@ public interface Function extends Documented {
 	 */
 	public String getFunctionName();
 	/**
+	 * @return Function physical name (raw functions only)
+	 */
+	public Optional<String> getPhysicalName();
+	/**
 	 * @return Function signatures
 	 */
-	public List<FunctionSignature> getSignatures();
+	public List<? extends FunctionSignature> getSignatures();
 }

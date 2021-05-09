@@ -25,7 +25,7 @@ public interface ExtendedStep extends Documented {
 	/**
 	 * @return Additional signatures
 	 */
-	public Optional<List<FunctionSignature>> getAddSignatures();
+	public Optional<? extends List<? extends FunctionSignature>> getAddSignatures();
     /**
      * default false
      * @return true - override (do not use) signatures defined on SuperStep levels
@@ -34,7 +34,7 @@ public interface ExtendedStep extends Documented {
 	/**
 	 * @return Additional execution blocks
 	 */
-    public Optional<List<BatchCall>> getAddExecBlocks();
+    public Optional<? extends List<? extends BatchCall>> getAddExecBlocks();
     /**
      * default false
      * @return true - override (do not use) execution blocks defined on SuperStep levels
@@ -43,11 +43,11 @@ public interface ExtendedStep extends Documented {
 	/**
 	 * @return New Transitioner
 	 */
-    public Optional<Call> getNewTransit();
+    public Optional<? extends Call> getNewTransit();
     /**
      * @return Additional Listeners
      */
-    public Optional<List<ListenerCall>> getAddListeners();
+    public Optional<? extends List<? extends ListenerCall>> getAddListeners();
     /**
      * default false
      * @return true - override (do not use) listeners defined on SuperStep levels

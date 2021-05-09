@@ -24,11 +24,11 @@ public interface Flow extends Documented {
     /**
      * @return Steps
      */
-    public Optional<List<Call>> getSteps();
+    public Optional<? extends List<? extends Call>> getSteps();
     /**
      * @return Listener bindings
      */
-    public Optional<List<ListenerCall>> getListeners();
+    public Optional<? extends List<? extends ListenerCall>> getListeners();
     /**
      * default false
      * @return true - override (do not use) listeners defined on parent levels

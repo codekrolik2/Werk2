@@ -17,11 +17,11 @@ public interface Call extends Documented {
     /**
      * @return Input parameter bindings
      */
-    public Optional<List<InBinding>> getInParameters();
+    public Optional<? extends List<? extends InBinding>> getInParameters();
     /**
      * @return Output parameter bindings
      */
-    public Optional<List<OutBinding>> getOutParameters();
+    public Optional<? extends List<? extends OutBinding>> getOutParameters();
     /**
      * @return Status binding
      */

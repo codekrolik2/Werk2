@@ -12,11 +12,7 @@ import org.werk2.config.Documented;
  */
 public interface FunctionSignature extends Documented {
 	/**
-	 * @return Input parameters
+	 * @return function parameters
 	 */
-    public Optional<List<FunctionParameter>> getInParameters();
-    /**
-     * @return Output parameters
-     */
-    public Optional<List<FunctionParameter>> getOutParameters();
+    public Optional<? extends List<? extends FunctionParameter>> getParameters();
 }

@@ -15,6 +15,10 @@ public interface FunctionParameter extends Documented {
 	 */
 	public String getName();
 	/**
+	 * @return IN or OUT parameter
+	 */
+	public ParameterDirection getDirection();
+	/**
 	 * @return Parameter type
 	 */
 	public ParameterType getType();
@@ -23,7 +27,7 @@ public interface FunctionParameter extends Documented {
 	 */
 	public Optional<String> getRuntimeType();
     /**
-     * default BY_REF
+     * default SYSTEM_DEFAULT
      * @return parameter passing mechanism
      */
 	public Optional<ParameterPassing> getPassing();

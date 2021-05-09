@@ -7,7 +7,8 @@ package org.werk2.config.functions;
  */
 public enum ParameterPassing {
     BY_REF,
-    BY_VAL;
+    BY_VAL,
+    SYSTEM_DEFAULT;
 
     public String value() {
         return name();

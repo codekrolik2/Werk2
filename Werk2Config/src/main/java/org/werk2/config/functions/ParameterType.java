@@ -8,6 +8,7 @@ package org.werk2.config.functions;
 public enum ParameterType {
 	//JSON-like
     LONG,
+    CHARACTER,
     DOUBLE,
     BOOL,
     STRING,

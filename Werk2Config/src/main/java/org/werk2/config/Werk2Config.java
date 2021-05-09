@@ -18,25 +18,25 @@ public interface Werk2Config extends Documented {
 	/**
 	 * @return Engine
 	 */
-    public Optional<Engine> getEngine();
+    public Optional<? extends Engine> getEngine();
     /**
      * @return Flows
      */
-    public Optional<List<Flow>> getFlows();
+    public Optional<? extends List<? extends Flow>> getFlows();
     /**
      * @return Steps
      */
-    public Optional<List<Step>> getSteps();
+    public Optional<? extends List<? extends Step>> getSteps();
     /**
      * @return Executioner functions
      */
-    public Optional<List<Exec>> getExecs();
+    public Optional<? extends List<? extends Exec>> getExecs();
     /**
      * @return Transitioner functions
      */
-    public Optional<List<Transit>> getTransits();
+    public Optional<? extends List<? extends Transit>> getTransits();
     /**
      * @return Raw function (code)
      */
-    public Optional<List<Function>> getRawFunctions();
+    public Optional<? extends List<? extends Function>> getRawFunctions();
 }

@@ -14,7 +14,7 @@ public interface ListenerCall extends BatchCall {
 	/**
 	 * @return Event bindings
 	 */
-    public List<Event> getEvents();
+    public List<? extends Event> getEvents();
     /**
      * @return Function name filter
      */

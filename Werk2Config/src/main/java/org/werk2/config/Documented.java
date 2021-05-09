@@ -11,5 +11,5 @@ public interface Documented {
 	/**
 	 * @return Documentation
 	 */
-	Optional<Doc> getDoc();
+	Optional<? extends Doc> getDoc();
 }

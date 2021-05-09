@@ -21,7 +21,7 @@ public interface Step extends Documented {
     /**
      * @return Execution blocks
      */
-    public Optional<List<BatchCall>> getExecBlocks();
+    public Optional<? extends List<? extends BatchCall>> getExecBlocks();
     /**
      * @return Transitioner
      */
@@ -29,7 +29,7 @@ public interface Step extends Documented {
     /**
      * @return Listener bindings
      */
-    public Optional<List<ListenerCall>> getListeners();
+    public Optional<? extends List<? extends ListenerCall>> getListeners();
     /**
      * default false
      * @return true - override (do not use) listeners defined on parent levels

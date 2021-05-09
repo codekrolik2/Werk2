@@ -22,7 +22,7 @@ public interface Transit extends Documented {
 	/**
 	 * @return Listener bindings
 	 */
-    public Optional<List<ListenerCall>> getListeners();
+    public Optional<? extends List<? extends ListenerCall>> getListeners();
     /**
      * default false
      * @return true - override (do not use) listeners defined on parent levels

@@ -25,7 +25,7 @@ public interface ExtendedFlow extends Documented {
 	/**
 	 * @return Additional function signatures
 	 */
-	public Optional<List<FunctionSignature>> getAddSignatures();
+	public Optional<? extends List<? extends FunctionSignature>> getAddSignatures();
     /**
      * default false
      * @return true - override (do not use) signatures defined on SuperFlow levels
@@ -35,11 +35,11 @@ public interface ExtendedFlow extends Documented {
 	/**
 	 * @return New First step
 	 */
-    public Optional<Call> getNewFirstStep();
+    public Optional<? extends Call> getNewFirstStep();
     /**
      * @return Additional steps
      */
-    public Optional<List<Call>> getAddSteps();
+    public Optional<? extends List<? extends Call>> getAddSteps();
     /**
      * default false
      * @return true - override (do not use) steps defined on SuperFlow levels
@@ -48,7 +48,7 @@ public interface ExtendedFlow extends Documented {
     /**
      * @return Additional listeners
      */
-    public Optional<List<ListenerCall>> getAddListeners();
+    public Optional<? extends List<? extends ListenerCall>> getAddListeners();
     /**
      * default false
      * @return true - override (do not use) listeners defined on SuperFlow levels

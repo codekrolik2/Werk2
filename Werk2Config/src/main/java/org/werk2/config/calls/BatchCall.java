@@ -20,11 +20,11 @@ public interface BatchCall extends Documented {
 	/**
 	 * @return Function calls
 	 */
-    public Optional<List<Call>> getCalls();
+    public Optional<? extends List<? extends Call>> getCalls();
     /**
      * @return Nested Batches
      */
-    public Optional<List<BatchCall>> getBatches();
+    public Optional<? extends List<? extends BatchCall>> getBatches();
     /**
      * default SYNCHRONIZED 
      * @return concurrency level
