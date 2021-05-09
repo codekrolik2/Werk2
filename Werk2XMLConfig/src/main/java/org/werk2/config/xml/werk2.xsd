@@ -32,8 +32,7 @@
     <xs:complexContent>
       <xs:extension base="documented">
         <xs:sequence>
-          <xs:element name="inParameter" type="prm" minOccurs="0" maxOccurs="unbounded"/>
-          <xs:element name="outParameter" type="prm" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="parameter" type="prm" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -44,6 +43,7 @@
       <xs:extension base="documented">
         <xs:sequence>
           <xs:element name="name" type="xs:string"/>
+          <xs:element name="direction" type="direction"/>
           <xs:element name="type" type="type"/>
           <xs:element name="runtimeType" type="xs:string" minOccurs="0"/>
           <xs:element name="pass" type="pass" default="SYSTEM_DEFAULT" minOccurs="0"/>
@@ -259,6 +259,7 @@
   <xs:simpleType name="type">
     <xs:restriction base="xs:string">
       <xs:enumeration value="LONG"/>
+      <xs:enumeration value="CHARACTER"/>
       <xs:enumeration value="DOUBLE"/>
       <xs:enumeration value="BOOL"/>
       <xs:enumeration value="STRING"/>
@@ -268,6 +269,13 @@
       <xs:enumeration value="RUNTIME"/>
       <xs:enumeration value="STEP"/>
       <xs:enumeration value="FUNCTION"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="direction">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="IN"/>
+      <xs:enumeration value="OUT"/>
     </xs:restriction>
   </xs:simpleType>
 
