@@ -7,27 +7,18 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.werk2.config.Doc;
 import org.werk2.config.calls.InBinding;
-import org.werk2.config.xml.XmlDocEntry;
+import org.werk2.config.xml.XmlDocumented;
 
 @XmlType(name = "in")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class XmlInBinding implements InBinding {
+public class XmlInBinding extends XmlDocumented implements InBinding {
 	@XmlElement(required = true)
 	public String fromField;
 	@XmlElement(required = true)
 	public String toInParameter;
 	@XmlElement(required = false)
 	public String value;
-
-	@XmlElement(required = false)
-    public XmlDocEntry doc;
-
-	@Override
-	public Optional<Doc> getDoc() {
-		return doc == null ? Optional.empty() : Optional.of(doc);
-	}
 
 	@Override
 	public Optional<String> getFromField() {

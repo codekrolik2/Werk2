@@ -8,7 +8,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.werk2.config.Doc;
 import org.werk2.config.Werk2Config;
 import org.werk2.config.engine.Engine;
 import org.werk2.config.entities.Exec;
@@ -23,10 +22,9 @@ import org.werk2.config.xml.entities.XmlStep;
 import org.werk2.config.xml.entities.XmlTransit;
 import org.werk2.config.xml.functions.XmlFunction;
 
-@SuppressWarnings({ "unchecked", "rawtypes" })
 @XmlRootElement(name = "config")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class XmlWerk2Config implements Werk2Config {
+public class XmlWerk2Config extends XmlDocumented implements Werk2Config {
 	@XmlElement(required = false)
     public XmlEngine engine;
 	@XmlElement(required = false)
@@ -40,41 +38,33 @@ public class XmlWerk2Config implements Werk2Config {
 	@XmlElement(required = false)
     public List<XmlFunction> rawFunction;
 
-	@XmlElement(required = false)
-    public XmlDocEntry doc;
-
-	@Override
-	public Optional<Doc> getDoc() {
-		return doc == null ? Optional.empty() : Optional.of(doc);
-	}
-
 	@Override
 	public Optional<Engine> getEngine() {
 		return engine == null ? Optional.empty() : Optional.of(engine);
 	}
 
 	@Override
-	public Optional<List<Flow>> getFlows() {
-		return flow == null ? Optional.empty() : Optional.of((List<Flow>)(List)flow);
+	public Optional<List<? extends Flow>> getFlows() {
+		return flow == null ? Optional.empty() : Optional.of(flow);
 	}
 
 	@Override
-	public Optional<List<Step>> getSteps() {
-		return step == null ? Optional.empty() : Optional.of((List<Step>)(List)step);
+	public Optional<List<? extends Step>> getSteps() {
+		return step == null ? Optional.empty() : Optional.of(step);
 	}
 
 	@Override
-	public Optional<List<Exec>> getExecs() {
-		return exec == null ? Optional.empty() : Optional.of((List<Exec>)(List)exec);
+	public Optional<List<? extends Exec>> getExecs() {
+		return exec == null ? Optional.empty() : Optional.of(exec);
 	}
 
 	@Override
-	public Optional<List<Transit>> getTransits() {
-		return transit == null ? Optional.empty() : Optional.of((List<Transit>)(List)transit);
+	public Optional<List<? extends Transit>> getTransits() {
+		return transit == null ? Optional.empty() : Optional.of(transit);
 	}
 
 	@Override
-	public Optional<List<Function>> getRawFunctions() {
-		return rawFunction == null ? Optional.empty() : Optional.of((List<Function>)(List)rawFunction);
+	public Optional<List<? extends Function>> getRawFunctions() {
+		return rawFunction == null ? Optional.empty() : Optional.of(rawFunction);
 	}
 }

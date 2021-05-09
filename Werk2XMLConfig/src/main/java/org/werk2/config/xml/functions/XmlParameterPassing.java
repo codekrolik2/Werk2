@@ -9,7 +9,8 @@ import org.werk2.config.functions.ParameterPassing;
 @XmlEnum
 public enum XmlParameterPassing {
     BY_REF,
-    BY_VAL;
+    BY_VAL,
+    SYSTEM_DEFAULT;
 
     public String value() {
         return name();
@@ -22,8 +23,9 @@ public enum XmlParameterPassing {
     public static ParameterPassing toParameterPassing(XmlParameterPassing p) {
     	switch (p) {
     		case BY_REF: return ParameterPassing.BY_REF;
-    		//case BY_VAL
-    		default : return ParameterPassing.BY_VAL;
+    		case BY_VAL : return ParameterPassing.BY_VAL;
+    		//case SYSTEM_DEFAULT
+    		default : return ParameterPassing.SYSTEM_DEFAULT;
     	}
     }
 }

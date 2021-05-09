@@ -10,6 +10,7 @@ import org.werk2.config.functions.ParameterType;
 public enum TypeXml {
 	//JSON-like
     LONG,
+    CHARACTER,
     DOUBLE,
     BOOL,
     STRING,
@@ -36,6 +37,7 @@ public enum TypeXml {
     public static ParameterType toParameterType(TypeXml type) {
     	switch (type) {
 	    	case LONG : return ParameterType.LONG;
+	    	case CHARACTER : return ParameterType.CHARACTER;
 	    	case DOUBLE : return ParameterType.DOUBLE;
 	    	case BOOL : return ParameterType.BOOL;
 	    	case STRING : return ParameterType.STRING;

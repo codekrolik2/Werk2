@@ -8,16 +8,14 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.werk2.config.Doc;
 import org.werk2.config.calls.BatchCall;
 import org.werk2.config.calls.Call;
 import org.werk2.config.calls.Concurrency;
-import org.werk2.config.xml.XmlDocEntry;
+import org.werk2.config.xml.XmlDocumented;
 
-@SuppressWarnings({ "unchecked", "rawtypes" })
 @XmlType(name = "batchCall")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class XmlBatchCall implements BatchCall {
+public class XmlBatchCall extends XmlDocumented implements BatchCall {
 	@XmlElement(required = false)
     public List<XmlCall> call;
 	@XmlElement(required = false)
@@ -25,22 +23,14 @@ public class XmlBatchCall implements BatchCall {
 	@XmlElement(required = false, defaultValue = "SYNCHRONIZED")
     public XmlConcurrency concurrency;
 
-	@XmlElement(required = false)
-    public XmlDocEntry doc;
-
 	@Override
-	public Optional<Doc> getDoc() {
-		return doc == null ? Optional.empty() : Optional.of(doc);
+	public Optional<List<? extends Call>> getCalls() {
+		return call == null ? Optional.empty() : Optional.of(call);
 	}
 
 	@Override
-	public Optional<List<Call>> getCalls() {
-		return call == null ? Optional.empty() : Optional.of((List<Call>)(List)call);
-	}
-
-	@Override
-	public Optional<List<BatchCall>> getBatches() {
-		return batch == null ? Optional.empty() : Optional.of((List<BatchCall>)(List)batch);
+	public Optional<List<? extends BatchCall>> getBatches() {
+		return batch == null ? Optional.empty() : Optional.of(batch);
 	}
 
 	@Override

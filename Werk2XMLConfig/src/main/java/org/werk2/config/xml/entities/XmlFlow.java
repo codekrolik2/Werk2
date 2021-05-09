@@ -8,19 +8,17 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.werk2.config.Doc;
 import org.werk2.config.calls.Call;
 import org.werk2.config.entities.Flow;
 import org.werk2.config.entities.ListenerCall;
 import org.werk2.config.functions.Function;
-import org.werk2.config.xml.XmlDocEntry;
+import org.werk2.config.xml.XmlDocumented;
 import org.werk2.config.xml.calls.XmlCall;
 import org.werk2.config.xml.functions.XmlFunction;
 
-@SuppressWarnings({ "unchecked", "rawtypes" })
 @XmlType(name = "flow")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class XmlFlow implements Flow {
+public class XmlFlow extends XmlDocumented implements Flow {
 	@XmlElement(required = true)
     public XmlFunction function;
 	@XmlElement(required = true)
@@ -33,14 +31,6 @@ public class XmlFlow implements Flow {
 	@XmlElement(required = false, defaultValue = "false")
     public Boolean overrideListeners;
 
-	@XmlElement(required = false)
-    public XmlDocEntry doc;
-
-	@Override
-	public Optional<Doc> getDoc() {
-		return doc == null ? Optional.empty() : Optional.of(doc);
-	}
-
 	@Override
 	public Function getFunction() {
 		return function;
@@ -52,13 +42,13 @@ public class XmlFlow implements Flow {
 	}
 
 	@Override
-	public Optional<List<Call>> getSteps() {
-		return step == null ? Optional.empty() : Optional.of((List<Call>)(List)step);
+	public Optional<List<? extends Call>> getSteps() {
+		return step == null ? Optional.empty() : Optional.of(step);
 	}
 
 	@Override
-	public Optional<List<ListenerCall>> getListeners() {
-		return listener == null ? Optional.empty() : Optional.of((List<ListenerCall>)(List)listener);
+	public Optional<List<? extends ListenerCall>> getListeners() {
+		return listener == null ? Optional.empty() : Optional.of(listener);
 	}
 
 	@Override

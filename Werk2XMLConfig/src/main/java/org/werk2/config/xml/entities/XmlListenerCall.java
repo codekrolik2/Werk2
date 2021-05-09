@@ -1,5 +1,6 @@
 package org.werk2.config.xml.entities;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,7 +13,6 @@ import org.werk2.config.entities.Event;
 import org.werk2.config.entities.ListenerCall;
 import org.werk2.config.xml.calls.XmlBatchCall;
 
-@SuppressWarnings({ "unchecked", "rawtypes" })
 @XmlType(name = "listener")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class XmlListenerCall extends XmlBatchCall implements ListenerCall {
@@ -23,7 +23,10 @@ public class XmlListenerCall extends XmlBatchCall implements ListenerCall {
 	
 	@Override
 	public List<Event> getEvents() {
-		return (List<Event>)(List)event;
+		List<Event> coreEvents = new ArrayList<>();
+		for (XmlEvent ev : event)
+			coreEvents.add(XmlEvent.toEvent(ev));
+		return coreEvents;
 	}
 	
 	@Override

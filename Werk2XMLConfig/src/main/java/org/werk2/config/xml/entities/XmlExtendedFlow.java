@@ -8,19 +8,17 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.werk2.config.Doc;
 import org.werk2.config.calls.Call;
 import org.werk2.config.entities.ExtendedFlow;
 import org.werk2.config.entities.ListenerCall;
 import org.werk2.config.functions.FunctionSignature;
-import org.werk2.config.xml.XmlDocEntry;
+import org.werk2.config.xml.XmlDocumented;
 import org.werk2.config.xml.calls.XmlCall;
 import org.werk2.config.xml.functions.XmlFunctionSignature;
 
-@SuppressWarnings({ "unchecked", "rawtypes" })
 @XmlType(name = "extendedFlow")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class XmlExtendedFlow implements ExtendedFlow {
+public class XmlExtendedFlow extends XmlDocumented implements ExtendedFlow {
 	@XmlElement(required = true)
 	public String superFlowFunctionName;
 	@XmlElement(required = true)
@@ -47,14 +45,6 @@ public class XmlExtendedFlow implements ExtendedFlow {
 	@XmlElement(required = false)
     public Boolean newOverrideListeners;
 
-	@XmlElement(required = false)
-    public XmlDocEntry doc;
-
-	@Override
-	public Optional<Doc> getDoc() {
-		return doc == null ? Optional.empty() : Optional.of(doc);
-	}
-
 	@Override
 	public String getSuperFlowFunctionName() {
 		return superFlowFunctionName;
@@ -66,8 +56,8 @@ public class XmlExtendedFlow implements ExtendedFlow {
 	}
 
 	@Override
-	public Optional<List<FunctionSignature>> getAddSignatures() {
-		return addSignature == null ? Optional.empty() : Optional.of((List<FunctionSignature>)(List)addSignature);
+	public Optional<List<? extends FunctionSignature>> getAddSignatures() {
+		return addSignature == null ? Optional.empty() : Optional.of(addSignature);
 	}
 
 	@Override
@@ -81,8 +71,8 @@ public class XmlExtendedFlow implements ExtendedFlow {
 	}
 
 	@Override
-	public Optional<List<Call>> getAddSteps() {
-		return addStep == null ? Optional.empty() : Optional.of((List<Call>)(List)addStep);
+	public Optional<List<? extends Call>> getAddSteps() {
+		return addStep == null ? Optional.empty() : Optional.of(addStep);
 	}
 
 	@Override
@@ -91,8 +81,8 @@ public class XmlExtendedFlow implements ExtendedFlow {
 	}
 
 	@Override
-	public Optional<List<ListenerCall>> getAddListeners() {
-		return addListener == null ? Optional.empty() : Optional.of((List<ListenerCall>)(List)addListener);
+	public Optional<List<? extends ListenerCall>> getAddListeners() {
+		return addListener == null ? Optional.empty() : Optional.of(addListener);
 	}
 
 	@Override

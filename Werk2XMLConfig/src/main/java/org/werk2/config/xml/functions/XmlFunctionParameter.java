@@ -7,35 +7,34 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.werk2.config.Doc;
 import org.werk2.config.functions.FunctionParameter;
+import org.werk2.config.functions.ParameterDirection;
 import org.werk2.config.functions.ParameterPassing;
 import org.werk2.config.functions.ParameterType;
-import org.werk2.config.xml.XmlDocEntry;
+import org.werk2.config.xml.XmlDocumented;
 
 @XmlType(name = "prm")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class XmlFunctionParameter implements FunctionParameter {
+public class XmlFunctionParameter extends XmlDocumented implements FunctionParameter {
 	@XmlElement(required = true)
 	public String name;
+	@XmlElement(required = true)
+	public XmlParameterDirection direction;
 	@XmlElement(required = true)
 	public TypeXml type;
 	@XmlElement(required = false)
 	public String runtimeType;
-	@XmlElement(required = false, defaultValue = "BY_REF")
+	@XmlElement(required = false, defaultValue = "SYSTEM_DEFAULT")
 	public XmlParameterPassing pass;
-
-	@XmlElement(required = false)
-    public XmlDocEntry doc;
-
-	@Override
-	public Optional<Doc> getDoc() {
-		return doc == null ? Optional.empty() : Optional.of(doc);
-	}
 
 	@Override
 	public String getName() {
 		return name;
+	}
+
+	@Override
+	public ParameterDirection getDirection() {
+		return XmlParameterDirection.toParameterDirection(direction);
 	}
 
 	@Override

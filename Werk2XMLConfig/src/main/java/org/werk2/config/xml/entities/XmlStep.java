@@ -8,21 +8,19 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.werk2.config.Doc;
 import org.werk2.config.calls.BatchCall;
 import org.werk2.config.calls.Call;
 import org.werk2.config.entities.ListenerCall;
 import org.werk2.config.entities.Step;
 import org.werk2.config.functions.Function;
-import org.werk2.config.xml.XmlDocEntry;
+import org.werk2.config.xml.XmlDocumented;
 import org.werk2.config.xml.calls.XmlBatchCall;
 import org.werk2.config.xml.calls.XmlCall;
 import org.werk2.config.xml.functions.XmlFunction;
 
-@SuppressWarnings({ "unchecked", "rawtypes" })
 @XmlType(name = "step")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class XmlStep implements Step {
+public class XmlStep extends XmlDocumented implements Step {
 	@XmlElement(required = true)
     public XmlFunction function;
 	@XmlElement(required = false)
@@ -35,22 +33,14 @@ public class XmlStep implements Step {
 	@XmlElement(required = false, defaultValue = "false")
     public Boolean overrideListeners;
 
-	@XmlElement(required = false)
-    public XmlDocEntry doc;
-
-	@Override
-	public Optional<Doc> getDoc() {
-		return doc == null ? Optional.empty() : Optional.of(doc);
-	}
-
 	@Override
 	public Function getFunction() {
 		return function;
 	}
 
 	@Override
-	public Optional<List<BatchCall>> getExecBlocks() {
-		return execBlock == null ? Optional.empty() : Optional.of((List<BatchCall>)(List)execBlock);
+	public Optional<List<? extends BatchCall>> getExecBlocks() {
+		return execBlock == null ? Optional.empty() : Optional.of(execBlock);
 	}
 
 	@Override
@@ -59,8 +49,8 @@ public class XmlStep implements Step {
 	}
 
 	@Override
-	public Optional<List<ListenerCall>> getListeners() {
-		return listener == null ? Optional.empty() : Optional.of((List<ListenerCall>)(List)listener);
+	public Optional<List<? extends ListenerCall>> getListeners() {
+		return listener == null ? Optional.empty() : Optional.of(listener);
 	}
 
 	@Override
