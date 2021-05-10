@@ -1,6 +1,7 @@
 package org.werk2.config.annotation.scan;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.AnnotationFormatError;
 import java.lang.reflect.Method;
@@ -23,6 +24,8 @@ import java.util.StringTokenizer;
 
 import org.scannotation.AnnotationDB;
 import org.werk2.common.OutParam;
+import org.werk2.common.Ret;
+import org.werk2.common.TransitRet;
 import org.werk2.config.annotation.annotations.AnnoType;
 import org.werk2.config.annotation.annotations.In;
 import org.werk2.config.annotation.annotations.Out;
@@ -38,7 +41,7 @@ import org.werk2.config.functions.ParameterPassing;
 import org.werk2.config.functions.ParameterType;
 
 public class WerkAnnotationScanner {
-	static List<URL> findClassPaths() throws MalformedURLException {
+	protected List<URL> findClassPaths() throws MalformedURLException {
 		List<URL> list = new ArrayList<>();
 		String classpath = System.getProperty("java.class.path");
 		StringTokenizer tokenizer = new StringTokenizer(classpath, File.pathSeparator);
@@ -56,7 +59,7 @@ public class WerkAnnotationScanner {
 		return list;
 	}
 
-	public static List<Method> getMethodsAnnotatedWith(final Class<?> type, final Class<? extends Annotation> annotation) {
+	protected List<Method> getMethodsAnnotatedWith(final Class<?> type, final Class<? extends Annotation> annotation) {
 	    final List<Method> methods = new ArrayList<Method>();
 	    Class<?> klass = type;
         for (final Method method : klass.getDeclaredMethods()) {
@@ -67,7 +70,7 @@ public class WerkAnnotationScanner {
 	    return methods;
 	}
 	
-	public ParameterType matchType(Type type) {
+	protected ParameterType matchType(Type type) {
 	    //TODO: add support
 	    //STEP,
 	    //FUNCTION;
@@ -117,7 +120,7 @@ public class WerkAnnotationScanner {
 		return ParameterType.RUNTIME;
 	}
 
-	public List<AnnoFunctionParameter> loadfunctionParameters(Method method, String physicalFunctionName) {
+	protected List<AnnoFunctionParameter> loadfunctionParameters(Method method, String physicalFunctionName) {
 		List<AnnoFunctionParameter> parameters = new ArrayList<>();
 
         Type[] genericParameterTypes = method.getGenericParameterTypes();
@@ -140,14 +143,14 @@ public class WerkAnnotationScanner {
         	Out outAnno = prm.getAnnotation(Out.class);
 
 			//Parameters must be marked as either @In or @Out, but not both
-    		if (((inAnno != null) && (outAnno != null)) ||
-    			((inAnno == null) && (outAnno == null))) {
-    			throw new AnnotationFormatError(
-    				String.format(
-    					"WerkFunction parameters must be annotated as either @In or @Out. [%s(%s)]", 
-    					physicalFunctionName, prm.getName()
-    				)
-    			);
+			if (inAnno == null && outAnno == null) {
+				throw new AnnotationFormatError(
+					String.format("WerkFunction parameters must be annotated as either @In or @Out. [%s(%s)]",
+						physicalFunctionName, prm.getName()));
+			} else if (inAnno != null && outAnno != null) {
+				throw new AnnotationFormatError(
+					String.format("WerkFunction parameters can't be annotated as both @In and @Out. [%s(%s)]",
+						physicalFunctionName, prm.getName()));
     		} else if (inAnno != null) {
     			direction = ParameterDirection.IN;
 
@@ -164,7 +167,7 @@ public class WerkAnnotationScanner {
     			if (!inAnno.runtimeType().trim().equals("")) {
     				runtimeType = Optional.of(inAnno.runtimeType().trim());
     			} else {
-    				runtimeType = Optional.of(genericParameterType.toString());
+    				runtimeType = Optional.of(genericParameterType.getTypeName());
     			}
     			
     			//This is the only parameter passing Java supports
@@ -230,11 +233,11 @@ public class WerkAnnotationScanner {
     	                ParameterizedType aType = (ParameterizedType) genericParameterType;
     	                Type[] parameterArgTypes = aType.getActualTypeArguments();
     	                for (Type parameterArgType : parameterArgTypes){
-	        				runtimeType = Optional.of(parameterArgType.toString());
+	        				runtimeType = Optional.of(parameterArgType.getTypeName());
     	                    break;
     	                }
     	            } else
-        				runtimeType = Optional.of(Object.class.toString());
+        				runtimeType = Optional.of(Object.class.getTypeName());
     			}
     			
     			//This is the only parameter passing Java supports
@@ -265,141 +268,166 @@ public class WerkAnnotationScanner {
 		
         return parameters;
 	}
-
 	
-	public List<Function> loadRawFunctions() throws WerkConfigException {
-    	try {
-    		URL[] urls = findClassPaths().toArray(new URL[] {});
+	protected void checkReturnType(Type returnType, String physicalFunctionName) {
+		//Only status, empty message
+		if (returnType.equals(int.class) || returnType.equals(Integer.class))
+			return;
 
-    		AnnotationDB db = new AnnotationDB();
-    		db.scanArchives(urls);
+		if (returnType.equals(Ret.class) || returnType.equals(TransitRet.class))
+			return;
 
-    		Map<String, List<FunctionSignature>> signaturesByPhysicalName = new HashMap<>();
-    		Map<String, Set<String>> signaturesByLogicalName = new HashMap<>();
-    		
-    		Set<String> classesWithWerkFunctions = db.getAnnotationIndex().get(WerkFunction.class.getName());
-    		if (classesWithWerkFunctions != null) {
-    			for (String className : classesWithWerkFunctions) {
-    				Class<?> klass = Class.forName(className);
-    				List<Method> methods = getMethodsAnnotatedWith(klass, WerkFunction.class);
-    				
-    				for (Method method : methods) {
-    					WerkFunction wf = method.getAnnotation(WerkFunction.class);
+		Class<?>[] interfaces = null;
+		if (returnType instanceof ParameterizedType) {
+			Type rawType = ((ParameterizedType)returnType).getRawType();
+			if (rawType instanceof Class) {
+				if (rawType.equals(Ret.class) || rawType.equals(TransitRet.class))
+					return;
+				
+				interfaces = ((Class<?>)rawType).getInterfaces();
+			}
+		}
+		
+		if (returnType instanceof Class)
+			interfaces = ((Class<?>)returnType).getInterfaces();
 
-    					String logicalFunctionName = wf.name();
-    					String physicalFunctionName = String.format("%s.%s", method.getDeclaringClass().getCanonicalName(), method.getName());
+		if (interfaces != null)
+		for (Class<?> intrf : interfaces)
+			if (intrf.equals(Ret.class) || intrf.equals(TransitRet.class))
+				return;
 
-    					//Non-static method can't be marked as a WerkFunction
-    					boolean isStatic = Modifier.isStatic(method.getModifiers());
-    					if (!isStatic)
-	    					throw new AnnotationFormatError(
-			        				String.format(
-			        					"WerkFunction must be static. [%s(...)]", 
-			        					physicalFunctionName
-			        				)
-			        			);
+		throw new AnnotationFormatError(
+				String.format(
+					"WerkFunction must return %s, %s, %s or %s. Func: [%s(...)]", 
+					int.class, Integer.class, Ret.class, TransitRet.class, 
+					physicalFunctionName
+				)
+			);
+	}
+	
+	public List<Function> loadRawFunctions() throws IOException, ClassNotFoundException {
+		URL[] urls = findClassPaths().toArray(new URL[] {});
 
-    					//return type should be either int or Integer
-    					Class<?> returnType = method.getReturnType();
-    					if (!returnType.equals(int.class) && !returnType.equals(Integer.class))
-	    					throw new AnnotationFormatError(
-			        				String.format(
-			        					"WerkFunction must return int or Integer. [%s(...)]", 
-			        					physicalFunctionName
-			        				)
-			        			);
-    					
-    					//Parameters
-    					List<AnnoFunctionParameter> parameters = loadfunctionParameters(method, physicalFunctionName);
-    			        
-    			        AnnoDocEntry doc = null;
-	        			if (!wf.docTitle().trim().equals("") || !wf.docDescription().trim().equals("")) {
-	        			    Optional<String> title;
-	        			    Optional<String> description;
-	        			    
-	        			    if (!wf.docTitle().trim().equals(""))
-	        			    	title = Optional.of(wf.docTitle().trim());
-	        			    else
-	        			    	title = Optional.empty();
-	        			    
-	        			    if (!wf.docDescription().trim().equals(""))
-	        			    	description = Optional.of(wf.docDescription().trim());
-	        			    else
-	        			    	description = Optional.empty();
+		AnnotationDB db = new AnnotationDB();
+		db.scanArchives(urls);
 
-	        			    doc = new AnnoDocEntry(title, description);
-	        			}
+		Map<String, List<FunctionSignature>> signaturesByPhysicalName = new HashMap<>();
+		Map<String, Set<String>> signaturesByLogicalName = new HashMap<>();
+		
+		Set<String> classesWithWerkFunctions = db.getAnnotationIndex().get(WerkFunction.class.getName());
+		if (classesWithWerkFunctions != null) {
+			for (String className : classesWithWerkFunctions) {
+				Class<?> klass = Class.forName(className);
+				List<Method> methods = getMethodsAnnotatedWith(klass, WerkFunction.class);
+				
+				for (Method method : methods) {
+					WerkFunction wf = method.getAnnotation(WerkFunction.class);
 
-	        			FunctionSignature signature = new AnnoFunctionSignature(
-	        					parameters.isEmpty() ? Optional.empty() : Optional.of(parameters),
-	        					doc == null ? Optional.empty() : Optional.of(doc));
-    					
-    					if (!logicalFunctionName.trim().equals("")) {
-        					Set<String> logFuncs = signaturesByLogicalName.get(logicalFunctionName);
-        					if (logFuncs == null) {
-        						logFuncs = new HashSet<>();
-        						signaturesByLogicalName.put(logicalFunctionName, logFuncs);
-        					}
-        					logFuncs.add(physicalFunctionName);
+					String logicalFunctionName = wf.name();
+					String physicalFunctionName = String.format("%s.%s", method.getDeclaringClass().getCanonicalName(), method.getName());
+
+					//Non-static method can't be marked as a WerkFunction
+					boolean isStatic = Modifier.isStatic(method.getModifiers());
+					if (!isStatic)
+    					throw new AnnotationFormatError(
+		        				String.format(
+		        					"WerkFunction must be static. [%s(...)]", 
+		        					physicalFunctionName
+		        				)
+		        			);
+
+					//return type should be either int or Integer
+					Type returnType = method.getGenericReturnType();
+					checkReturnType(returnType, physicalFunctionName);
+					
+					//Parameters
+					List<AnnoFunctionParameter> parameters = loadfunctionParameters(method, physicalFunctionName);
+			        
+			        AnnoDocEntry doc = null;
+        			if (!wf.docTitle().trim().equals("") || !wf.docDescription().trim().equals("")) {
+        			    Optional<String> title;
+        			    Optional<String> description;
+        			    
+        			    if (!wf.docTitle().trim().equals(""))
+        			    	title = Optional.of(wf.docTitle().trim());
+        			    else
+        			    	title = Optional.empty();
+        			    
+        			    if (!wf.docDescription().trim().equals(""))
+        			    	description = Optional.of(wf.docDescription().trim());
+        			    else
+        			    	description = Optional.empty();
+
+        			    doc = new AnnoDocEntry(title, description);
+        			}
+
+        			FunctionSignature signature = new AnnoFunctionSignature(
+        					parameters.isEmpty() ? Optional.empty() : Optional.of(parameters),
+        					doc == null ? Optional.empty() : Optional.of(doc));
+					
+					if (!logicalFunctionName.trim().equals("")) {
+    					Set<String> logFuncs = signaturesByLogicalName.get(logicalFunctionName);
+    					if (logFuncs == null) {
+    						logFuncs = new HashSet<>();
+    						signaturesByLogicalName.put(logicalFunctionName, logFuncs);
     					}
+    					logFuncs.add(physicalFunctionName);
+					}
 
-    					List<FunctionSignature> physFuncs = signaturesByPhysicalName.get(physicalFunctionName);
-    					if (physFuncs == null) {
-    						physFuncs = new ArrayList<>();
-    						signaturesByPhysicalName.put(physicalFunctionName, physFuncs);
-    					}
-    					physFuncs.add(signature);
-    				}
-    			}
-    		}
-    		
-    		//-------------------------------------------------------
-    		
-        	List<Function> functions = new ArrayList<>();
-        	
-    		//Logical function name can't point to more than one physical function name (overloads are allowed)
-    		//All function names, logical and physical should be unique
-    		for (Entry<String, Set<String>> ent : signaturesByLogicalName.entrySet()) {
-    			String functionName = ent.getKey();
-    			Set<String> physNames = ent.getValue();
-    			
-    			if (physNames.size() > 1) {
-    				StringBuilder b = new StringBuilder();
-    				b.append("Logical function name can't point to more than one physical function name.").
-    				append(" Logical: [").append(functionName).append("();] points to [");
-    				for (String phys : physNames)
-    					b.append(phys).append("(); ");
-    				b.append("]");
-
-        			throw new AnnotationFormatError(b.toString());
-    			}
-    			
-    			if (signaturesByPhysicalName.containsKey(functionName))
-        			throw new AnnotationFormatError(
-        				String.format("All function names, logical and physical should be unique. "
-        					+ "logical: [%s();] clashes with physical [%s(%s);]",
-        					functionName, functionName, signaturesByPhysicalName.get(functionName)
-        				)
-        			);
-
-    			String physicalName = null;
+					List<FunctionSignature> physFuncs = signaturesByPhysicalName.get(physicalFunctionName);
+					if (physFuncs == null) {
+						physFuncs = new ArrayList<>();
+						signaturesByPhysicalName.put(physicalFunctionName, physFuncs);
+					}
+					physFuncs.add(signature);
+				}
+			}
+		}
+		
+		//-------------------------------------------------------
+		
+    	List<Function> functions = new ArrayList<>();
+    	
+		//Logical function name can't point to more than one physical function name (overloads are allowed)
+		//All function names, logical and physical should be unique
+		for (Entry<String, Set<String>> ent : signaturesByLogicalName.entrySet()) {
+			String functionName = ent.getKey();
+			Set<String> physNames = ent.getValue();
+			
+			if (physNames.size() > 1) {
+				StringBuilder b = new StringBuilder();
+				b.append("Logical function name can't point to more than one physical function name.").
+				append(" Logical: [").append(functionName).append("();] points to [");
 				for (String phys : physNames)
-					physicalName = phys;
+					b.append(phys).append("(); ");
+				b.append("]");
 
-				functions.add(new AnnoFunction(functionName, Optional.of(physicalName), 
-        				signaturesByPhysicalName.get(physicalName), Optional.empty()));
-    		}
+    			throw new AnnotationFormatError(b.toString());
+			}
+			
+			if (signaturesByPhysicalName.containsKey(functionName))
+    			throw new AnnotationFormatError(
+    				String.format("All function names, logical and physical should be unique. "
+    					+ "logical: [%s();] clashes with physical [%s(%s);]",
+    					functionName, functionName, signaturesByPhysicalName.get(functionName)
+    				)
+    			);
 
-    		for (Entry<String, List<FunctionSignature>> ent : signaturesByPhysicalName.entrySet()) {
-    			String functionName = ent.getKey();
-    			List<FunctionSignature> signatures = ent.getValue();
+			String physicalName = null;
+			for (String phys : physNames)
+				physicalName = phys;
 
-				functions.add(new AnnoFunction(functionName, Optional.of(functionName), signatures, Optional.empty()));
-    		}
+			functions.add(new AnnoFunction(functionName, Optional.of(physicalName), 
+    				signaturesByPhysicalName.get(physicalName), Optional.empty()));
+		}
 
-    		return functions;
-    	} catch(Exception e) {
-    		throw new WerkConfigException(e);
-    	}
+		for (Entry<String, List<FunctionSignature>> ent : signaturesByPhysicalName.entrySet()) {
+			String functionName = ent.getKey();
+			List<FunctionSignature> signatures = ent.getValue();
+
+			functions.add(new AnnoFunction(functionName, Optional.of(functionName), signatures, Optional.empty()));
+		}
+
+		return functions;
     }
 }
