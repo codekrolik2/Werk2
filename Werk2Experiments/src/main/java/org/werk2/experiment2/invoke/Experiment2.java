@@ -261,5 +261,7 @@ public class Experiment2 {
 		System.out.println("outStatus [" + fields.get("outStatus") + "]");
 		System.out.println("outMessage [" + fields.get("outMessage") + "]");
 		System.out.println("transition [" + fields.get("transition") + "]");
+		
+		//ParameterizedType t = new 
 	}
 }
