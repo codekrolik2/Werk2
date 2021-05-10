@@ -4,6 +4,10 @@
 *) ?? Step constant starts with $, Flow constant starts with #
 	for readability
 
+*) Test serializeability for Lists and Dictionaries
+	if not serializeable - update type to RUNTIME, warning
+
+*) Test type safety
 
 Explicit IS_TRANSIT?
 

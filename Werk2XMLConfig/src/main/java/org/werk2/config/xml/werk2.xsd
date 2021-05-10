@@ -179,7 +179,6 @@
       <xs:extension base="documented">
         <xs:sequence>
           <xs:element name="transitFunctionName" type="xs:string"/>
-          <xs:element name="rawFunctionName" type="xs:string"/>
           <xs:element name="listener" type="listener" minOccurs="0" maxOccurs="unbounded"/>
           <xs:element name="overrideListeners" type="xs:boolean" default="false" minOccurs="0"/>
         </xs:sequence>
@@ -235,7 +234,6 @@
       <xs:extension base="documented">
         <xs:sequence>
           <xs:element name="execFunctionName" type="xs:string"/>
-          <xs:element name="rawFunctionName" type="xs:string"/>
           <xs:element name="listener" type="listener" minOccurs="0" maxOccurs="unbounded"/>
           <xs:element name="overrideListeners" type="xs:boolean" default="false" minOccurs="0"/>
         </xs:sequence>
