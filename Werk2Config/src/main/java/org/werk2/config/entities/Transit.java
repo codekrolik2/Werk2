@@ -16,10 +16,6 @@ public interface Transit extends Documented {
 	 */
 	public String getTransitFunctionName();
 	/**
-	 * @return Raw function name
-	 */
-	public String getRawFunctionName();
-	/**
 	 * @return Listener bindings
 	 */
     public Optional<? extends List<? extends ListenerCall>> getListeners();

@@ -16,10 +16,6 @@ public interface Exec extends Documented {
 	 */
 	public String getExecFunctionName();
 	/**
-	 * @return Raw function name
-	 */
-	public String getRawFunctionName();
-	/**
 	 * @return Bound listeners
 	 */
     public Optional<? extends List<? extends ListenerCall>> getListeners();
