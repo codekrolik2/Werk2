@@ -17,8 +17,6 @@ import org.werk2.config.xml.XmlDocumented;
 public class XmlExec extends XmlDocumented implements Exec {
 	@XmlElement(required = true)
 	public String execFunctionName;
-	@XmlElement(required = true)
-	public String rawFunctionName;
 	@XmlElement(required = false)
     public List<XmlListenerCall> listener;
 	@XmlElement(required = false, defaultValue = "false")
@@ -27,11 +25,6 @@ public class XmlExec extends XmlDocumented implements Exec {
 	@Override
 	public String getExecFunctionName() {
 		return execFunctionName;
-	}
-
-	@Override
-	public String getRawFunctionName() {
-		return rawFunctionName;
 	}
 
 	@Override

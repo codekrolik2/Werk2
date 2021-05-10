@@ -17,8 +17,6 @@ import org.werk2.config.xml.XmlDocumented;
 public class XmlTransit extends XmlDocumented implements Transit {
 	@XmlElement(required = true)
 	public String transitFunctionName;
-	@XmlElement(required = true)
-	public String rawFunctionName;
 	@XmlElement(required = false)
     public List<XmlListenerCall> listener;
 	@XmlElement(required = false, defaultValue = "false")
@@ -27,11 +25,6 @@ public class XmlTransit extends XmlDocumented implements Transit {
 	@Override
 	public String getTransitFunctionName() {
 		return transitFunctionName;
-	}
-
-	@Override
-	public String getRawFunctionName() {
-		return rawFunctionName;
 	}
 
 	@Override
