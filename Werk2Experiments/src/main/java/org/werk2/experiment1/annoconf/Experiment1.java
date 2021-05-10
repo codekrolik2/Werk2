@@ -1,4 +1,4 @@
-package org.werk2.config.annotation;
+package org.werk2.experiment1.annoconf;
 
 import java.util.List;
 

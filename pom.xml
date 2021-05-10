@@ -27,6 +27,7 @@
 
 	<dependencyManagement>
 		<dependencies>
+			<!-- modules -->
 			<dependency>
 				<groupId>org.werk2</groupId>
 				<artifactId>Werk2Config</artifactId>
@@ -53,16 +54,7 @@
 				<version>${project.version}</version>
 			</dependency>
 
-			<dependency>
-				<groupId>org.javatuples</groupId>
-				<artifactId>javatuples</artifactId>
-				<version>1.2</version>
-			</dependency>
-			<dependency>
-				<groupId>io.vertx</groupId>
-				<artifactId>vertx-core</artifactId>
-				<version>${vertx.version}</version>
-			</dependency>
+			<!-- Java SE enhancements -->
 			<dependency>
 				<groupId>org.projectlombok</groupId>
 				<artifactId>lombok</artifactId>
@@ -70,22 +62,37 @@
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
+				<groupId>org.javatuples</groupId>
+				<artifactId>javatuples</artifactId>
+				<version>1.2</version>
+			</dependency>
+
+			<!-- server -->
+			<dependency>
+				<groupId>io.vertx</groupId>
+				<artifactId>vertx-core</artifactId>
+				<version>${vertx.version}</version>
+			</dependency>
+
+			<!-- annotations -->
+			<dependency>
 				<groupId>org.scannotation</groupId>
 				<artifactId>scannotation</artifactId>
 				<version>1.0.3</version>
 			</dependency>
-			<!-- https://mvnrepository.com/artifact/org.javassist/javassist -->
 			<dependency>
 				<groupId>org.javassist</groupId>
 				<artifactId>javassist</artifactId>
 				<version>3.27.0-GA</version>
 			</dependency>
+
 			<!-- logging -->
 			<dependency>
 				<groupId>ch.qos.logback</groupId>
 				<artifactId>logback-classic</artifactId>
 				<version>1.2.3</version>
 			</dependency>
+
 			<!-- unit testing -->
 			<dependency>
 				<groupId>junit</groupId>
@@ -101,5 +108,4 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-
 </project>
