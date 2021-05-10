@@ -11,7 +11,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -85,7 +84,7 @@ public class WerkAnnotationScanner {
 			return ParameterType.BOOL;
 		} else if (type.equals(String.class)) {
 			return ParameterType.STRING;
-		} else if (type.equals(ByteBuffer.class)) {
+		} else if (type.equals(byte[].class)) {
 			return ParameterType.BYTES;
 		} else {
 			if (type.equals(List.class))
@@ -164,11 +163,10 @@ public class WerkAnnotationScanner {
     			else
     				type = matchType(genericParameterType);
     			
-    			if (!inAnno.runtimeType().trim().equals("")) {
+    			if (!inAnno.runtimeType().trim().equals(""))
     				runtimeType = Optional.of(inAnno.runtimeType().trim());
-    			} else {
+    			else
     				runtimeType = Optional.of(genericParameterType.getTypeName());
-    			}
     			
     			//This is the only parameter passing Java supports
     			pass = Optional.of(ParameterPassing.SYSTEM_DEFAULT);

@@ -8,8 +8,26 @@ import java.util.List;
 import org.javatuples.Pair;
 
 public class WerkParameterizedTypeParser {
-	public Class<?> classForName(String name) throws ClassNotFoundException {
+	/**
+	 * Will accept primitive types names ("int", "char", etc.) and "byte[]"
+	 * For arrays of other types do the folowing:
+	 * To determine array class name, run, e.g.:
+	 * 		System.out.println(int[].class.getName());
+	 * Thus,
+	 * "[I" is int[].class's
+	 * "[Ljava.lang.String" for String[]
+	 * "[Lpacket.to.YourClass" for YourClass[]
+	 * 
+	 * @param name Full class name
+	 * @return Class instance
+	 * @throws ClassNotFoundException Class not found
+	 */
+	public static Class<?> classForName(String name) throws ClassNotFoundException {
 		name = name.trim();
+		
+		if (name.equals("byte[]"))
+			return byte[].class;
+
 		if (name.equals("byte"))
 			return byte.class;
 		if (name.equals("short"))
@@ -47,7 +65,7 @@ public class WerkParameterizedTypeParser {
 				genericNesting--;
 			
 			if (genericEncountered && genericNesting == 0) {
-				if (typeStr.charAt(i) == '.') {
+				if (typeStr.charAt(i) == '.' || typeStr.charAt(i) == '$') {
 					break;
 				}
 			}
@@ -81,19 +99,7 @@ public class WerkParameterizedTypeParser {
 		return lst;
 	}
 	
-	public Type parse(String typeStr, Type ownerType) throws ClassNotFoundException {
-		typeStr = typeStr.trim();
-
-		Pair<String, String> ownershipPair = splitOwnerHierarchy(typeStr);
-		Type newType = parseGeneric(ownershipPair.getValue0(), ownerType);
-		
-		if (ownershipPair.getValue1() == null)
-			return newType;
-		else
-			return parse(ownershipPair.getValue1(), newType);			
-	}
-
-	public Type parseGeneric(String typeStr, Type ownerType) throws ClassNotFoundException {
+	protected Type parseGeneric(String typeStr, Type ownerType) throws ClassNotFoundException {
 		typeStr = typeStr.trim();
 		int genStart = typeStr.indexOf('<');
 		
@@ -116,6 +122,18 @@ public class WerkParameterizedTypeParser {
 			
 			return WerkParameterizedTypeImpl.make(rawType, genericTypes, ownerType);
 		}
+	}
+
+	protected Type parse(String typeStr, Type ownerType) throws ClassNotFoundException {
+		typeStr = typeStr.trim();
+
+		Pair<String, String> ownershipPair = splitOwnerHierarchy(typeStr);
+		Type newType = parseGeneric(ownershipPair.getValue0(), ownerType);
+		
+		if (ownershipPair.getValue1() == null)
+			return newType;
+		else
+			return parse(ownershipPair.getValue1(), newType);			
 	}
 
 	/**

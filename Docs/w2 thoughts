@@ -1,6 +1,8 @@
 *) Batch executor
 *) Logical function call - flow -> step -> etc.
 
+*) ?? Step constant starts with $, Flow constant starts with #
+	for readability
 
 
 Explicit IS_TRANSIT?

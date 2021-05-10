@@ -16,11 +16,11 @@ public class TestWerkGenerics<I, J> {
 		class Inn<G> { }		
 	}
 	
-	public void parseMap(Map<Integer, TestWerkGenerics<String, Boolean>.MyGen<Character>.Inn<Long>> map) {
+	public void parseMap(Map<Integer, TestWerkGenerics<String, Boolean>.MyGen<byte[]>.Inn<Long>> map) {
 		
 	}
 	
-	public void parseMap2(Map<Integer, TestWerkGenerics<String, Boolean>.MyGen<Character>> map) {
+	public void parseMap2(Map<Integer, TestWerkGenerics<String, Boolean>.MyGen<byte[]>> map) {
 		
 	}
 	
@@ -28,15 +28,15 @@ public class TestWerkGenerics<I, J> {
 		
 	}
 	
-	public void parseMap4(Map<Integer, TestWerkGenerics<String, Boolean>.MyGen<Character>.Inn<Double>> map) {
+	public void parseMap4(Map<Integer, TestWerkGenerics<String, Boolean>.MyGen<byte[]>.Inn<Double>> map) {
 		
 	}
 	
-	public void parseMap5(Map<Integer, TestWerkGenerics<String, Integer>.MyGen<Character>.Inn<Long>> map) {
+	public void parseMap5(Map<Integer, TestWerkGenerics<String, Integer>.MyGen<byte[]>.Inn<Long>> map) {
 		
 	}
 	
-	public void parseMap6(Map<Integer, TestWerkGenerics<Integer, Boolean>.MyGen<Character>.Inn<Long>> map) {
+	public void parseMap6(Map<Integer, TestWerkGenerics<Integer, Boolean>.MyGen<byte[]>.Inn<Long>> map) {
 		
 	}
 
@@ -51,12 +51,6 @@ public class TestWerkGenerics<I, J> {
 		assertEquals(hie2.getValue0(), "T1<T2, T3<T4, T5>.T6<T7>>");
 		assertNull(hie2.getValue1());
 		
-		String hier = 
-				"java.util.Map<java.lang.Integer, "
-				+ "org.werk2.generics.TestWerkGenerics<java.lang.String, java.lang.Boolean>"
-				+ ".MyGen<java.lang.Character>.Inn<java.lang.Long>>";
-		Type t = p.parse(hier);
-		
 		Method method1 = TestWerkGenerics.class.getMethod("parseMap", Map.class);
 		Method method2 = TestWerkGenerics.class.getMethod("parseMap2", Map.class);
 		Method method3 = TestWerkGenerics.class.getMethod("parseMap3", Map.class);
@@ -64,11 +58,30 @@ public class TestWerkGenerics<I, J> {
 		Method method5 = TestWerkGenerics.class.getMethod("parseMap5", Map.class);
 		Method method6 = TestWerkGenerics.class.getMethod("parseMap6", Map.class);
 
+		String hier = 
+				"java.util.Map<java.lang.Integer, "
+				+ "org.werk2.generics.TestWerkGenerics<java.lang.String, java.lang.Boolean>"
+				+ ".MyGen<byte[]>.Inn<java.lang.Long>>";
+		Type t = p.parse(hier);
+		
 		assertEquals(t, method1.getGenericParameterTypes()[0]);
 		assertNotEquals(t, method2.getGenericParameterTypes()[0]);
 		assertNotEquals(t, method3.getGenericParameterTypes()[0]);
 		assertNotEquals(t, method4.getGenericParameterTypes()[0]);
 		assertNotEquals(t, method5.getGenericParameterTypes()[0]);
 		assertNotEquals(t, method6.getGenericParameterTypes()[0]);
+
+		String hier2 = 
+				"java.util.Map<java.lang.Integer, "
+				+ "org.werk2.generics.TestWerkGenerics<java.lang.Integer, java.lang.Boolean>"
+				+ "$MyGen<[B>$Inn<java.lang.Long>>";
+		Type t2 = p.parse(hier2);
+
+		assertNotEquals(t2, method1.getGenericParameterTypes()[0]);
+		assertNotEquals(t2, method2.getGenericParameterTypes()[0]);
+		assertNotEquals(t2, method3.getGenericParameterTypes()[0]);
+		assertNotEquals(t2, method4.getGenericParameterTypes()[0]);
+		assertNotEquals(t2, method5.getGenericParameterTypes()[0]);
+		assertEquals(t2, method6.getGenericParameterTypes()[0]);
 	}
 }
