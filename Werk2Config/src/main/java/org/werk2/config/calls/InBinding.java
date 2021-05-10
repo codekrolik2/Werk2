@@ -12,11 +12,11 @@ public interface InBinding extends Documented {
 	/**
 	 * @return Field name
 	 */
-	public Optional<String> getFromField();
+	public String fromField();
 	/**
 	 * @return Input parameter name
 	 */
-	public String getToInParameter();
+	public String toInParameter();
 	/**
 	 * @return Constant value
 	 */

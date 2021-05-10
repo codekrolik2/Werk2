@@ -1,4 +1,4 @@
-package org.werk2.config.annotation.scan;
+package org.werk2.common;
 
 public class WerkConfigException extends Exception {
 	private static final long serialVersionUID = -8100988101758300479L;

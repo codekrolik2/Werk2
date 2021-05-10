@@ -23,7 +23,11 @@ public interface FunctionParameter extends Documented {
 	 */
 	public ParameterType getType();
 	/**
-	 * @return If Type - RUNTIME, specify Raw Type
+	 * Logical functions may have runtime parameter type set for their parameters.
+	 * Physical functions must have runtime parameter type set for their parameters.
+	 * All RUNTIME parameters for logical and physical functions must have runtime parameter type set.
+	 * 
+	 * @return Raw Type for the parameter
 	 */
 	public Optional<String> getRuntimeType();
     /**

@@ -16,7 +16,8 @@ public interface Function extends Documented {
 	 */
 	public String getFunctionName();
 	/**
-	 * @return Function physical name (raw functions only)
+	 * Physical functions must have physical name set
+	 * @return Function physical name
 	 */
 	public Optional<String> getPhysicalName();
 	/**
