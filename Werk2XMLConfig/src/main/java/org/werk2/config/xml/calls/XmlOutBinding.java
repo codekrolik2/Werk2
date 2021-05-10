@@ -17,12 +17,12 @@ public class XmlOutBinding extends XmlDocumented implements OutBinding {
     public String toField;
 
 	@Override
-	public String getFromOutParameter() {
+	public String fromOutParameter() {
 		return fromOutParameter;
 	}
 
 	@Override
-	public String getToField() {
+	public String toField() {
 		return toField;
 	}
 }

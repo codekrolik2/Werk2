@@ -21,12 +21,12 @@ public class XmlInBinding extends XmlDocumented implements InBinding {
 	public String value;
 
 	@Override
-	public Optional<String> getFromField() {
-		return fromField == null ? Optional.empty() : Optional.of(fromField);
+	public String fromField() {
+		return fromField;
 	}
 
 	@Override
-	public String getToInParameter() {
+	public String toInParameter() {
 		return toInParameter;
 	}
 
