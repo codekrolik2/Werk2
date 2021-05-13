@@ -25,6 +25,7 @@ import org.scannotation.AnnotationDB;
 import org.werk2.common.OutParam;
 import org.werk2.common.Ret;
 import org.werk2.common.TransitRet;
+import org.werk2.common.WerkTypeMatcher;
 import org.werk2.config.annotation.annotations.AnnoType;
 import org.werk2.config.annotation.annotations.In;
 import org.werk2.config.annotation.annotations.Out;
@@ -69,55 +70,6 @@ public class WerkAnnotationScanner {
 	    return methods;
 	}
 	
-	protected ParameterType matchType(Type type) {
-	    //TODO: add support
-	    //STEP,
-	    //FUNCTION;
-
-		if (type.equals(int.class) || type.equals(Integer.class) || type.equals(long.class) || type.equals(Long.class)) {
-			return ParameterType.LONG;
-		} else if (type.equals(char.class) || type.equals(Character.class)) {
-			return ParameterType.CHARACTER;
-		} else if (type.equals(double.class) || type.equals(Double.class)) {
-			return ParameterType.DOUBLE;
-		} else if (type.equals(boolean.class) || type.equals(Boolean.class)) {
-			return ParameterType.BOOL;
-		} else if (type.equals(String.class)) {
-			return ParameterType.STRING;
-		} else if (type.equals(byte[].class)) {
-			return ParameterType.BYTES;
-		} else {
-			if (type.equals(List.class))
-				return ParameterType.LIST;
-			if (type.equals(Map.class))
-				return ParameterType.DICTIONARY;
-
-			Class<?>[] interfaces = null;
-			if (type instanceof ParameterizedType) {
-				Type rawType = ((ParameterizedType)type).getRawType();
-				if (rawType instanceof Class) {
-					if (rawType.equals(List.class))
-						return ParameterType.LIST;
-					if (rawType.equals(Map.class))
-						return ParameterType.DICTIONARY;
-					
-					interfaces = ((Class<?>)rawType).getInterfaces();
-				}
-			}
-			if (type instanceof Class) {
-				interfaces = ((Class<?>)type).getInterfaces();
-			}
-			if (interfaces != null)
-			for (Class<?> intrf : interfaces) {
-				if (intrf.equals(List.class))
-					return ParameterType.LIST;
-				if (intrf.equals(Map.class))
-					return ParameterType.DICTIONARY;
-			}
-		}
-
-		return ParameterType.RUNTIME;
-	}
 
 	protected List<AnnoFunctionParameter> loadfunctionParameters(Method method, String physicalFunctionName) {
 		List<AnnoFunctionParameter> parameters = new ArrayList<>();
@@ -161,7 +113,7 @@ public class WerkAnnotationScanner {
     			if (inAnno.type() != AnnoType.AUTO)
     				type = AnnoType.toParameterType(inAnno.type());
     			else
-    				type = matchType(genericParameterType);
+    				type = WerkTypeMatcher.matchType(genericParameterType);
     			
     			if (!inAnno.runtimeType().trim().equals(""))
     				runtimeType = Optional.of(inAnno.runtimeType().trim());
@@ -217,11 +169,11 @@ public class WerkAnnotationScanner {
     	                ParameterizedType aType = (ParameterizedType) genericParameterType;
     	                Type[] parameterArgTypes = aType.getActualTypeArguments();
     	                for (Type parameterArgType : parameterArgTypes){
-    	                    type = matchType(parameterArgType);
+    	                    type = WerkTypeMatcher.matchType(parameterArgType);
     	                    break;
     	                }
     	            } else
-    	            	type = matchType(Object.class);
+    	            	type = WerkTypeMatcher.matchType(Object.class);//RUNTIME
     			}
     			
     			if (!outAnno.runtimeType().trim().equals("")) {

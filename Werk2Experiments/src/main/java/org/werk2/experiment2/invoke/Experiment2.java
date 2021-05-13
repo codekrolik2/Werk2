@@ -1,11 +1,8 @@
 package org.werk2.experiment2.invoke;
 
 import java.io.IOException;
-import java.lang.annotation.AnnotationFormatError;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -24,79 +21,14 @@ import org.werk2.config.functions.Function;
 import org.werk2.config.functions.FunctionParameter;
 import org.werk2.config.functions.FunctionSignature;
 import org.werk2.config.functions.ParameterDirection;
+import org.werk2.core.config.FieldsStructure;
+import org.werk2.core.config.MaterializedConfig;
+import org.werk2.core.config.ReturnType;
+import org.werk2.generics.WerkParameterizedTypeParser;
 
 import lombok.NonNull;
 
 public class Experiment2 {
-	protected ReturnType getMethodReturnType(Method m, String physicalFunctionName) {
-		Type returnType = m.getGenericReturnType();
-
-		//Only status, empty message
-		if (returnType.equals(int.class) || returnType.equals(Integer.class))
-			return ReturnType.INT;
-		if (returnType.equals(Ret.class))
-			return ReturnType.RET;
-		if (returnType.equals(TransitRet.class))
-			return ReturnType.TRANSIT;
-
-		Class<?>[] interfaces = null;
-		if (returnType instanceof ParameterizedType) {
-			Type rawType = ((ParameterizedType)returnType).getRawType();
-			if (rawType instanceof Class) {
-				if (rawType.equals(Ret.class))
-					return ReturnType.RET;
-				if (rawType.equals(TransitRet.class))
-					return ReturnType.TRANSIT;
-				
-				interfaces = ((Class<?>)rawType).getInterfaces();
-			}
-		}
-		
-		if (returnType instanceof Class)
-			interfaces = ((Class<?>)returnType).getInterfaces();
-
-		if (interfaces != null)
-		for (Class<?> intrf : interfaces) {
-			if (intrf.equals(Ret.class))
-				return ReturnType.RET;
-			if (intrf.equals(TransitRet.class))
-				return ReturnType.TRANSIT;
-		}
-
-		throw new AnnotationFormatError(
-				String.format(
-					"WerkFunction must return %s, %s, %s or %s. Func: [%s(...)]", 
-					int.class, Integer.class, Ret.class, TransitRet.class,
-					physicalFunctionName
-				)
-			);
-	}
-	
-	public Class<?> classForName(String name) throws ClassNotFoundException {
-		name = name.trim();
-		if (name.equals("byte"))
-			return byte.class;
-		if (name.equals("short"))
-			return short.class;
-		if (name.equals("int"))
-			return int.class;
-		if (name.equals("long"))
-			return long.class;
-		if (name.equals("float"))
-			return float.class;
-		if (name.equals("double"))
-			return double.class;
-		if (name.equals("boolean"))
-			return boolean.class;
-		if (name.equals("char"))
-			return char.class;
-
-		int ind = name.indexOf('<');
-		if (ind > 0)
-			name = name.substring(0, ind);
-
-		return Class.forName(name);
-	}
 	
 	public void invokePhysicalFunction(@NonNull FieldsStructure fs, @NonNull Call c, 
 			@NonNull Function f, @NonNull FunctionSignature s, String caller) 
@@ -111,12 +43,12 @@ public class Experiment2 {
 		String functionName = physicalName.substring(lastInd + 1);
 		
 		//TODO: Methods should be discovered and cached at the same time.
-		Class<?> cls = classForName(className);
+		Class<?> cls = WerkParameterizedTypeParser.classForName(className);
 		Class<?>[] paramTypes = new Class<?>[funParams.size()]; 
 		for (int i = 0; i < paramTypes.length; i++) {
 			FunctionParameter funParam = funParams.get(i);
 			if (funParam.getDirection() == ParameterDirection.IN)
-				paramTypes[i] = classForName(funParam.getRuntimeType().get());
+				paramTypes[i] = WerkParameterizedTypeParser.classForName(funParam.getRuntimeType().get());
 			else //if (funParams.get(i).getDirection() == ParameterDirection.OUT) {
 				paramTypes[i] = OutParam.class;
 		}
@@ -124,7 +56,7 @@ public class Experiment2 {
 		Method m = cls.getMethod(functionName, paramTypes);
 
 		//TODO: Method's return type also should be precached.
-		ReturnType rt = getMethodReturnType(m, physicalName);
+		ReturnType rt = MaterializedConfig.getMethodReturnType(m, physicalName);
 		
 		//TODO: In and Out Parameter bindings should be put in Maps for speedy lookup.
 		//TODO: Parameter Type Safety should be checked on startup

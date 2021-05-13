@@ -1,4 +1,4 @@
-package org.werk2.experiment2.invoke;
+package org.werk2.core.config;
 
 import org.werk2.common.Ret;
 
@@ -7,11 +7,11 @@ import lombok.ToString;
 
 @ToString
 @AllArgsConstructor
-public class RetProto implements Ret {
+public class RetImpl implements Ret {
 	protected int status;
 	protected String statusMessage = null;
 	
-	public RetProto(int status) {
+	public RetImpl(int status) {
 		this.status = status;
 	}
 

@@ -179,6 +179,7 @@
       <xs:extension base="documented">
         <xs:sequence>
           <xs:element name="transitFunctionName" type="xs:string"/>
+          <xs:element name="calledFunctionName" type="xs:string"/>
           <xs:element name="listener" type="listener" minOccurs="0" maxOccurs="unbounded"/>
           <xs:element name="overrideListeners" type="xs:boolean" default="false" minOccurs="0"/>
         </xs:sequence>
@@ -234,6 +235,7 @@
       <xs:extension base="documented">
         <xs:sequence>
           <xs:element name="execFunctionName" type="xs:string"/>
+          <xs:element name="calledFunctionName" type="xs:string"/>
           <xs:element name="listener" type="listener" minOccurs="0" maxOccurs="unbounded"/>
           <xs:element name="overrideListeners" type="xs:boolean" default="false" minOccurs="0"/>
         </xs:sequence>
@@ -263,7 +265,7 @@
       <xs:enumeration value="STRING"/>
       <xs:enumeration value="BYTES"/>
       <xs:enumeration value="LIST"/>
-      <xs:enumeration value="DICTIONARY"/>
+      <xs:enumeration value="MAP"/>
       <xs:enumeration value="RUNTIME"/>
       <xs:enumeration value="STEP"/>
       <xs:enumeration value="FUNCTION"/>

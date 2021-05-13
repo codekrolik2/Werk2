@@ -16,7 +16,7 @@ public enum AnnoType {
     STRING,
     BYTES,
     LIST,
-    DICTIONARY,
+    MAP,
     
     //Runtime parameters - any type allowed in underlying language    
     RUNTIME,
@@ -46,13 +46,13 @@ public enum AnnoType {
     		case STRING: return ParameterType.STRING;
     		case BYTES: return ParameterType.BYTES;
     		case LIST: return ParameterType.LIST;
-    		case DICTIONARY: return ParameterType.DICTIONARY;
-		        
+    		case MAP: return ParameterType.MAP;
+		    
     		case RUNTIME: return ParameterType.RUNTIME;
 		
     		case STEP: return ParameterType.STEP;
     		case FUNCTION: return ParameterType.FUNCTION;
-		        
+		    
     		//case AUTO
     		default: throw new IllegalArgumentException("No direct ParameterType match to AnnoType.AUTO.");
     	}

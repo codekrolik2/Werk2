@@ -14,7 +14,7 @@ public enum ParameterType {
     STRING,
     BYTES,
     LIST,
-    DICTIONARY,
+    MAP,
     
     //Runtime parameters - any type allowed in underlying language    
     RUNTIME,

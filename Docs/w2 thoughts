@@ -8,12 +8,22 @@
 	if not serializeable - update type to RUNTIME, warning
 
 *) Test type safety
+Type safety - ?premature optimization? - mb warnings at first
+
+*) Less verbose config language - Antlr config
+
+*) Special parameters (auto-fill?): CurrentStep, CurrentFlow, EngineContext
+	--CurrentStep, CurrentFlow probably not needed, while EngineContext parameters can be still injected
+
+*) Custom initialization checks for Steps (?? and Flows)
+
+*) Flow to define calls with different parameters to a step as different steps to be differentiated by name
+	StepCall with StepName
+
 
 Explicit IS_TRANSIT?
 
-
-TypeCasters for function calls
-Type safety - ?premature optimization? - mb warnings at first
+TypeCasters for function calls?
 
 Notes w2
 

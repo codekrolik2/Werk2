@@ -16,7 +16,7 @@ public enum TypeXml {
     STRING,
     BYTES,
     LIST,
-    DICTIONARY,
+    MAP,
     
     //Runtime parameters - any type allowed in underlying language    
     RUNTIME,
@@ -43,7 +43,7 @@ public enum TypeXml {
 	    	case STRING : return ParameterType.STRING;
 	    	case BYTES : return ParameterType.BYTES;
 	    	case LIST : return ParameterType.LIST;
-	    	case DICTIONARY : return ParameterType.DICTIONARY;
+	    	case MAP : return ParameterType.MAP;
 	    	case RUNTIME : return ParameterType.RUNTIME;
 	    	case STEP : return ParameterType.STEP;
 	    	//case FUNCTION

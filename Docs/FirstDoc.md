@@ -83,7 +83,7 @@ Serializable Fields are restricted to types and structure mimicking JSON structu
     	STRING,
     	
     	LIST,
-    	DICTIONARY
+    	MAP
     }
 
 Runtime Fields can be of any type allowed in underlying language, including the types that are associated with Serializable Fields. The difference between the two is that Fields marked as Serializable will be serialized, while Runtime Fields will be omitted and therefore lost.

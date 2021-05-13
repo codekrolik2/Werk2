@@ -1,4 +1,4 @@
-package org.werk2.experiment2.invoke;
+package org.werk2.core.config;
 
 public enum ReturnType {
 	INT,
