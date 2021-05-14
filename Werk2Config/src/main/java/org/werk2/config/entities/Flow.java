@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.werk2.config.Documented;
-import org.werk2.config.calls.Call;
 import org.werk2.config.functions.Function;
 
 /**
@@ -20,11 +19,11 @@ public interface Flow extends Documented {
     /**
      * @return First step
      */
-    public Call getFirstStep();
+    public StepCall getFirstStep();
     /**
      * @return Steps
      */
-    public Optional<? extends List<? extends Call>> getSteps();
+    public Optional<? extends List<? extends StepCall>> getSteps();
     /**
      * @return Listener bindings
      */

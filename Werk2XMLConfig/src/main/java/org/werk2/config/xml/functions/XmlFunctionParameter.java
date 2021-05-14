@@ -10,7 +10,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.werk2.config.functions.FunctionParameter;
 import org.werk2.config.functions.ParameterDirection;
 import org.werk2.config.functions.ParameterPassing;
-import org.werk2.config.functions.ParameterType;
+import org.werk2.config.functions.WerkParameterType;
 import org.werk2.config.xml.XmlDocumented;
 
 @XmlType(name = "prm")
@@ -38,7 +38,7 @@ public class XmlFunctionParameter extends XmlDocumented implements FunctionParam
 	}
 
 	@Override
-	public ParameterType getType() {
+	public WerkParameterType getType() {
 		return TypeXml.toParameterType(type);
 	}
 

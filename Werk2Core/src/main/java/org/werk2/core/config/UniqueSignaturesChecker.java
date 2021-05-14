@@ -13,7 +13,7 @@ import org.werk2.config.functions.Function;
 import org.werk2.config.functions.FunctionParameter;
 import org.werk2.config.functions.FunctionSignature;
 import org.werk2.config.functions.ParameterDirection;
-import org.werk2.config.functions.ParameterType;
+import org.werk2.config.functions.WerkParameterType;
 import org.werk2.generics.WerkParameterizedTypeParser;
 
 import lombok.NonNull;
@@ -39,8 +39,8 @@ public class UniqueSignaturesChecker {
 			
 			if (prm2 == null)
 				return false;
-			if (prm1.getType() == ParameterType.RUNTIME || prm2.getType() == ParameterType.RUNTIME) {
-				if (prm1.getType() == ParameterType.RUNTIME || prm2.getType() == ParameterType.RUNTIME) {
+			if (prm1.getType() == WerkParameterType.RUNTIME || prm2.getType() == WerkParameterType.RUNTIME) {
+				if (prm1.getType() == WerkParameterType.RUNTIME || prm2.getType() == WerkParameterType.RUNTIME) {
 					//Make sure RuntimeTypes are set for RUNTIME parameters
 					if (prm2.getRuntimeType().isEmpty()) {
 						throw new WerkConfigException(
@@ -76,8 +76,8 @@ public class UniqueSignaturesChecker {
 					}
 					
 					//First try to match as Werk ParameterTypes
-					ParameterType prm1Type = WerkTypeMatcher.matchType(runtimeType1);
-					ParameterType prm2Type = WerkTypeMatcher.matchType(runtimeType2);
+					WerkParameterType prm1Type = WerkTypeMatcher.matchType(runtimeType1);
+					WerkParameterType prm2Type = WerkTypeMatcher.matchType(runtimeType2);
 					if (prm1Type != prm2Type)
 						return false;
 					
@@ -91,7 +91,7 @@ public class UniqueSignaturesChecker {
 				} else {
 					//If one of the parameters is RUNTIME, we compare its runtimeType to Werk ParameterType
 					//prm1 to be Runtime
-					if (prm2.getType() == ParameterType.RUNTIME) {
+					if (prm2.getType() == WerkParameterType.RUNTIME) {
 						FunctionParameter swp = prm1;
 						prm1 = prm2;
 						prm2 = swp;
@@ -114,7 +114,7 @@ public class UniqueSignaturesChecker {
 						);
 					}
 					
-					ParameterType prm1Type = WerkTypeMatcher.matchType(runtimeType1);
+					WerkParameterType prm1Type = WerkTypeMatcher.matchType(runtimeType1);
 					if (prm1Type != prm2.getType())
 						return false;
 				}

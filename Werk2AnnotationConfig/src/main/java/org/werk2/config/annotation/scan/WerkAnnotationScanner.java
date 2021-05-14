@@ -38,7 +38,7 @@ import org.werk2.config.functions.Function;
 import org.werk2.config.functions.FunctionSignature;
 import org.werk2.config.functions.ParameterDirection;
 import org.werk2.config.functions.ParameterPassing;
-import org.werk2.config.functions.ParameterType;
+import org.werk2.config.functions.WerkParameterType;
 
 public class WerkAnnotationScanner {
 	protected List<URL> findClassPaths() throws MalformedURLException {
@@ -80,7 +80,7 @@ public class WerkAnnotationScanner {
         for (int i = 0; i < params.length; i++) {
     		String name = null;
     		ParameterDirection direction = null;
-    		ParameterType type = null;
+    		WerkParameterType type = null;
     		Optional<String> runtimeType = null;
     		Optional<ParameterPassing> pass = null;
     		Optional<AnnoDocEntry> doc = null;

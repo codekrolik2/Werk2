@@ -1,6 +1,6 @@
 package org.werk2.config.annotation.annotations;
 
-import org.werk2.config.functions.ParameterType;
+import org.werk2.config.functions.WerkParameterType;
 
 /**
  * Parameter type
@@ -10,7 +10,7 @@ import org.werk2.config.functions.ParameterType;
 public enum AnnoType {
 	//JSON-like
     LONG,
-    CHARACTER,
+    CHAR,
     DOUBLE,
     BOOL,
     STRING,
@@ -37,21 +37,21 @@ public enum AnnoType {
         return valueOf(v);
     }
     
-    public static ParameterType toParameterType(AnnoType type) {
+    public static WerkParameterType toParameterType(AnnoType type) {
     	switch (type) {
-    		case LONG: return ParameterType.LONG;
-    		case CHARACTER : return ParameterType.CHARACTER;
-    		case DOUBLE: return ParameterType.DOUBLE;
-    		case BOOL: return ParameterType.BOOL;
-    		case STRING: return ParameterType.STRING;
-    		case BYTES: return ParameterType.BYTES;
-    		case LIST: return ParameterType.LIST;
-    		case MAP: return ParameterType.MAP;
+    		case LONG: return WerkParameterType.LONG;
+    		case CHAR : return WerkParameterType.CHAR;
+    		case DOUBLE: return WerkParameterType.DOUBLE;
+    		case BOOL: return WerkParameterType.BOOL;
+    		case STRING: return WerkParameterType.STRING;
+    		case BYTES: return WerkParameterType.BYTES;
+    		case LIST: return WerkParameterType.LIST;
+    		case MAP: return WerkParameterType.MAP;
 		    
-    		case RUNTIME: return ParameterType.RUNTIME;
+    		case RUNTIME: return WerkParameterType.RUNTIME;
 		
-    		case STEP: return ParameterType.STEP;
-    		case FUNCTION: return ParameterType.FUNCTION;
+    		case STEP: return WerkParameterType.STEP;
+    		case FUNCTION: return WerkParameterType.FUNCTION;
 		    
     		//case AUTO
     		default: throw new IllegalArgumentException("No direct ParameterType match to AnnoType.AUTO.");

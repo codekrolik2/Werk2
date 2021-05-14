@@ -8,12 +8,11 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.werk2.config.calls.Call;
 import org.werk2.config.entities.Flow;
 import org.werk2.config.entities.ListenerCall;
+import org.werk2.config.entities.StepCall;
 import org.werk2.config.functions.Function;
 import org.werk2.config.xml.XmlDocumented;
-import org.werk2.config.xml.calls.XmlCall;
 import org.werk2.config.xml.functions.XmlFunction;
 
 @XmlType(name = "flow")
@@ -22,9 +21,9 @@ public class XmlFlow extends XmlDocumented implements Flow {
 	@XmlElement(required = true)
     public XmlFunction function;
 	@XmlElement(required = true)
-    public XmlCall firstStep;
+    public XmlStepCall firstStep;
 	@XmlElement(required = false)
-    public List<XmlCall> step;
+    public List<XmlStepCall> step;
     
 	@XmlElement(required = false)
     public List<XmlListenerCall> listener;
@@ -37,12 +36,12 @@ public class XmlFlow extends XmlDocumented implements Flow {
 	}
 
 	@Override
-	public Call getFirstStep() {
+	public StepCall getFirstStep() {
 		return firstStep;
 	}
 
 	@Override
-	public Optional<List<? extends Call>> getSteps() {
+	public Optional<List<? extends StepCall>> getSteps() {
 		return step == null ? Optional.empty() : Optional.of(step);
 	}
 

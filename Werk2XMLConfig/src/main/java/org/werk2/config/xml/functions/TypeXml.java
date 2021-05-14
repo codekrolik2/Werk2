@@ -3,14 +3,14 @@ package org.werk2.config.xml.functions;
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlType;
 
-import org.werk2.config.functions.ParameterType;
+import org.werk2.config.functions.WerkParameterType;
 
 @XmlType(name = "type")
 @XmlEnum
 public enum TypeXml {
 	//JSON-like
     LONG,
-    CHARACTER,
+    CHAR,
     DOUBLE,
     BOOL,
     STRING,
@@ -34,20 +34,20 @@ public enum TypeXml {
         return valueOf(v);
     }
     
-    public static ParameterType toParameterType(TypeXml type) {
+    public static WerkParameterType toParameterType(TypeXml type) {
     	switch (type) {
-	    	case LONG : return ParameterType.LONG;
-	    	case CHARACTER : return ParameterType.CHARACTER;
-	    	case DOUBLE : return ParameterType.DOUBLE;
-	    	case BOOL : return ParameterType.BOOL;
-	    	case STRING : return ParameterType.STRING;
-	    	case BYTES : return ParameterType.BYTES;
-	    	case LIST : return ParameterType.LIST;
-	    	case MAP : return ParameterType.MAP;
-	    	case RUNTIME : return ParameterType.RUNTIME;
-	    	case STEP : return ParameterType.STEP;
+	    	case LONG : return WerkParameterType.LONG;
+	    	case CHAR : return WerkParameterType.CHAR;
+	    	case DOUBLE : return WerkParameterType.DOUBLE;
+	    	case BOOL : return WerkParameterType.BOOL;
+	    	case STRING : return WerkParameterType.STRING;
+	    	case BYTES : return WerkParameterType.BYTES;
+	    	case LIST : return WerkParameterType.LIST;
+	    	case MAP : return WerkParameterType.MAP;
+	    	case RUNTIME : return WerkParameterType.RUNTIME;
+	    	case STEP : return WerkParameterType.STEP;
 	    	//case FUNCTION
-    		default : return ParameterType.FUNCTION;
+    		default : return WerkParameterType.FUNCTION;
     	}
     }
 }

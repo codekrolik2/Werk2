@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.javatuples.Pair;
-import org.werk2.config.functions.ParameterType;
+import org.werk2.config.functions.WerkParameterType;
 import org.werk2.core.config.FieldsStructure;
 
 public class StepProto implements FieldsStructure {
@@ -16,7 +16,7 @@ public class StepProto implements FieldsStructure {
 	}
 
 	@Override
-	public Map<String, Pair<ParameterType, String>> getFieldsTypesMap() {
+	public Map<String, Pair<WerkParameterType, String>> getFieldsTypesMap() {
 		// TODO Auto-generated method stub
 		return null;
 	}

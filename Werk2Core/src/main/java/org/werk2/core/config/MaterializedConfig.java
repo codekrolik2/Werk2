@@ -413,6 +413,10 @@ public class MaterializedConfig {
 		}
 	}
 	
+	//TODO: somewhere make sure that "BY_REF" and "BY_VAL" passing is prohibited.
+	//TODO: Somewhere here make sure there are no declarations like: "LONG String prm1"
+	//	i.e. WerkParameterType doesn't clash with runtimeType
+	//TODO: Also check that if Parameter is denoted as LIST or MAP it holds serializable types only
 	public MaterializedConfig(List<Werk2Config> configs) throws WerkConfigException {
 		//Check for duplicate signatures.
 	    //Signature is defined by in parameters, out parameter don't matter.
@@ -435,7 +439,7 @@ public class MaterializedConfig {
 		//!!!!!!!!!!!!!!!!!!!!!!1
 		
 		for (Werk2Config config : configs) {
-			//1. Transit and exec functions
+			//1. Validate Transit and exec functions
 			if (!config.getExecs().isEmpty()) {
 				for (Exec exec : config.getExecs().get()) {
 					//verify that CalledFunction exists
@@ -475,12 +479,9 @@ public class MaterializedConfig {
 				}
 			}
 			
-			//2. Load Steps
+			//2. Validate Steps
 			if (!config.getSteps().isEmpty()) {
 				for (Step step : config.getSteps().get()) {
-					//steps
-					//step.getFunction().getFunctionName(), step
-					
 					//TODO: validate Transitioner call and type safety
 					validateCall(step.getTransit(), true, step);
 					

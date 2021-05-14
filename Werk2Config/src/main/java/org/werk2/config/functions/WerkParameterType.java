@@ -5,10 +5,10 @@ package org.werk2.config.functions;
  * @author jamirov
  *
  */
-public enum ParameterType {
+public enum WerkParameterType {
 	//JSON-like
     LONG,
-    CHARACTER,
+    CHAR,
     DOUBLE,
     BOOL,
     STRING,
@@ -28,7 +28,7 @@ public enum ParameterType {
         return name();
     }
     
-    public static ParameterType fromValue(String v) {
+    public static WerkParameterType fromValue(String v) {
         return valueOf(v);
     }
 }

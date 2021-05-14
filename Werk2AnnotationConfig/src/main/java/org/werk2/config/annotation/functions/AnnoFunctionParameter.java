@@ -6,7 +6,7 @@ import org.werk2.config.Doc;
 import org.werk2.config.functions.FunctionParameter;
 import org.werk2.config.functions.ParameterDirection;
 import org.werk2.config.functions.ParameterPassing;
-import org.werk2.config.functions.ParameterType;
+import org.werk2.config.functions.WerkParameterType;
 
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -17,7 +17,7 @@ import lombok.ToString;
 public class AnnoFunctionParameter implements FunctionParameter {
 	@NonNull protected String name;
 	@NonNull protected ParameterDirection direction;
-	@NonNull protected ParameterType type;
+	@NonNull protected WerkParameterType type;
 	@NonNull protected Optional<String> runtimeType;
 	@NonNull protected Optional<ParameterPassing> pass;
 	@NonNull protected Optional<? extends Doc> doc;
@@ -37,7 +37,7 @@ public class AnnoFunctionParameter implements FunctionParameter {
 	}
 
 	@Override
-	public ParameterType getType() {
+	public WerkParameterType getType() {
 		return type;
 	}
 

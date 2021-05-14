@@ -21,7 +21,7 @@ public interface FunctionParameter extends Documented {
 	/**
 	 * @return Parameter type
 	 */
-	public ParameterType getType();
+	public WerkParameterType getType();
 	/**
 	 * Logical functions may have runtime parameter type set for their parameters.
 	 * Physical functions must have runtime parameter type set for their parameters.
