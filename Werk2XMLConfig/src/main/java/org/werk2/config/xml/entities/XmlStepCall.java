@@ -8,17 +8,16 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.werk2.config.entities.StepCall;
-import org.werk2.config.xml.calls.XmlBatchCall;
+import org.werk2.config.xml.calls.XmlCall;
 
-@XmlType(name = "listener")
+@XmlType(name = "stepCall")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class XmlStepCall extends XmlBatchCall implements StepCall {
+public class XmlStepCall extends XmlCall implements StepCall {
 	@XmlElement(required = false)
     public String stepAlias;
 
 	@Override
 	public Optional<String> getStepAlias() {
-		// TODO Auto-generated method stub
-		return null;
+		return stepAlias == null ? Optional.empty() : Optional.of(stepAlias);
 	}
 }

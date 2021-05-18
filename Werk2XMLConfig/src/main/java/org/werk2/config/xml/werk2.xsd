@@ -11,8 +11,8 @@
           <xs:element name="newFunctionName" type="xs:string"/>
           <xs:element name="addSignature" type="signature" minOccurs="0" maxOccurs="unbounded"/>
           <xs:element name="dropOldSignatures" type="xs:boolean" default="false" minOccurs="0"/>
-          <xs:element name="newFirstStep" type="call" minOccurs="0"/>
-          <xs:element name="addStep" type="call" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="newFirstStep" type="stepCall" minOccurs="0"/>
+          <xs:element name="addStep" type="stepCall" minOccurs="0" maxOccurs="unbounded"/>
           <xs:element name="dropOldSteps" type="xs:boolean" default="false" minOccurs="0"/>
           <xs:element name="addListener" type="listener" minOccurs="0" maxOccurs="unbounded"/>
           <xs:element name="dropOldListeners" type="xs:boolean" default="false" minOccurs="0"/>
@@ -57,6 +57,16 @@
       <xs:element name="title" type="xs:string" minOccurs="0"/>
       <xs:element name="description" type="xs:string" minOccurs="0"/>
     </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="stepCall">
+    <xs:complexContent>
+      <xs:extension base="call">
+        <xs:sequence>
+          <xs:element name="stepAlias" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="call">
@@ -129,8 +139,8 @@
           <xs:element name="newFunctionName" type="xs:string"/>
           <xs:element name="addSignature" type="signature" minOccurs="0" maxOccurs="unbounded"/>
           <xs:element name="dropOldSignatures" type="xs:boolean" default="false" minOccurs="0"/>
-          <xs:element name="addExecBlock" type="batchCall" minOccurs="0" maxOccurs="unbounded"/>
-          <xs:element name="dropOldExecs" type="xs:boolean" default="false" minOccurs="0"/>
+          <xs:element name="addExecBlock" type="batchCall" minOccurs="0"/>
+          <xs:element name="dropOldExec" type="xs:boolean" default="false" minOccurs="0"/>
           <xs:element name="newTransit" type="call" minOccurs="0"/>
           <xs:element name="addListener" type="listener" minOccurs="0" maxOccurs="unbounded"/>
           <xs:element name="dropOldListeners" type="xs:boolean" default="false" minOccurs="0"/>
@@ -187,13 +197,26 @@
     </xs:complexContent>
   </xs:complexType>
 
+  <xs:complexType name="exec">
+    <xs:complexContent>
+      <xs:extension base="documented">
+        <xs:sequence>
+          <xs:element name="execFunctionName" type="xs:string"/>
+          <xs:element name="calledFunctionName" type="xs:string"/>
+          <xs:element name="listener" type="listener" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="overrideListeners" type="xs:boolean" default="false" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
   <xs:complexType name="flow">
     <xs:complexContent>
       <xs:extension base="documented">
         <xs:sequence>
           <xs:element name="function" type="function"/>
-          <xs:element name="firstStep" type="call"/>
-          <xs:element name="step" type="call" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="firstStep" type="stepCall"/>
+          <xs:element name="step" type="stepCall" minOccurs="0" maxOccurs="unbounded"/>
           <xs:element name="listener" type="listener" minOccurs="0" maxOccurs="unbounded"/>
           <xs:element name="overrideListeners" type="xs:boolean" default="false" minOccurs="0"/>
         </xs:sequence>
@@ -208,6 +231,8 @@
           <xs:element name="engine" type="engine" minOccurs="0"/>
           <xs:element name="flow" type="flow" minOccurs="0" maxOccurs="unbounded"/>
           <xs:element name="step" type="step" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="extendedFlow" type="extendedFlow" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="extendedStep" type="extendedStep" minOccurs="0" maxOccurs="unbounded"/>
           <xs:element name="exec" type="exec" minOccurs="0" maxOccurs="unbounded"/>
           <xs:element name="transit" type="transit" minOccurs="0" maxOccurs="unbounded"/>
           <xs:element name="rawFunction" type="function" minOccurs="0" maxOccurs="unbounded"/>
@@ -221,21 +246,8 @@
       <xs:extension base="documented">
         <xs:sequence>
           <xs:element name="function" type="function"/>
-          <xs:element name="execBlock" type="batchCall" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="execBlock" type="batchCall" minOccurs="0"/>
           <xs:element name="transit" type="call"/>
-          <xs:element name="listener" type="listener" minOccurs="0" maxOccurs="unbounded"/>
-          <xs:element name="overrideListeners" type="xs:boolean" default="false" minOccurs="0"/>
-        </xs:sequence>
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
-
-  <xs:complexType name="exec">
-    <xs:complexContent>
-      <xs:extension base="documented">
-        <xs:sequence>
-          <xs:element name="execFunctionName" type="xs:string"/>
-          <xs:element name="calledFunctionName" type="xs:string"/>
           <xs:element name="listener" type="listener" minOccurs="0" maxOccurs="unbounded"/>
           <xs:element name="overrideListeners" type="xs:boolean" default="false" minOccurs="0"/>
         </xs:sequence>
@@ -259,7 +271,7 @@
   <xs:simpleType name="type">
     <xs:restriction base="xs:string">
       <xs:enumeration value="LONG"/>
-      <xs:enumeration value="CHARACTER"/>
+      <xs:enumeration value="CHAR"/>
       <xs:enumeration value="DOUBLE"/>
       <xs:enumeration value="BOOL"/>
       <xs:enumeration value="STRING"/>

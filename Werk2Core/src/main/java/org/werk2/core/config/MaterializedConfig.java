@@ -100,53 +100,66 @@ public class MaterializedConfig {
 	}
 	
 	/**
-	 * Fill registry: Engine and Raw functions.
-	 * Validate RawFunctions.
+	 * Fill registry: Engine.
+	 * Make sure one and only one Engine is declared.
+	 * 
+	 * @param configs Werk configurations
+	 * @throws WerkConfigException Configuration error
+	 */
+	protected void fillEngine(List<Werk2Config> configs) throws WerkConfigException {
+		for (Werk2Config config : configs) {
+			if (!config.getEngine().isEmpty()) {
+				//*) There can be only 1 Engine per process (at least for now)
+				if (engine != null) {
+					//TODO: MB allow duplicate declaration of the same engine? (WARN vs throw)
+					throw new WerkConfigException(
+							String.format("Only one WerkEngine is allowed: Engine1: [%s]; Engine2: [%s].", 
+								engine, config.getEngine().get())
+						);
+				} else {
+					engine = config.getEngine().get();
+					
+					if (!engine.getListeners().isEmpty())
+						validateListeners(
+							new Event[] {
+								Event.FLOW_STARTED,
+								Event.FLOW_FINISHED,
+								Event.STEP_STARTED,
+								Event.STEP_FINISHED,
+								Event.EXECUTOR_STARTED,
+								Event.EXECUTOR_FINISHED,
+								Event.TRANSITIONER_STARTED,
+								Event.TRANSITIONER_FINISHED
+							},
+							engine.getListeners().get(),
+							engine);
+				}
+			}
+		}
+		
+		if (engine == null)
+			throw new WerkConfigException("At least one WerkEngine must be configured.");
+	}
+		
+	/**
+	 * Fill registry: Raw functions. Validate RawFunctions.
 	 * 
 	 * @param configs Werk configurations
 	 * @throws WerkConfigException Configuration error
 	 */
 	protected void fillRawFunctions(List<Werk2Config> configs) throws WerkConfigException {
+		//TODO: MB allow duplicate declarations of the same function? (WARN vs throw)
 		try {
 			//load invocation structures. Keep track of return type (to identify functions that can be transits).
 			for (Werk2Config config : configs) {
-				if (!config.getEngine().isEmpty()) {
-					//*) There can be only 1 Engine per process (at least for now)
-					if (engine != null) {
-						//TODO: MB allow duplicate declaration of the same engine? (WARN vs throw)
-						throw new WerkConfigException(
-								String.format("Only one engine is allowed: Engine1: [%s]; Engine2: [%s].", 
-									engine, config.getEngine().get())
-							);
-					} else {
-						engine = config.getEngine().get();
-						
-						if (!engine.getListeners().isEmpty())
-							validateListeners(
-								new Event[] {
-									Event.FLOW_STARTED,
-									Event.FLOW_FINISHED,
-									Event.STEP_STARTED,
-									Event.STEP_FINISHED,
-									Event.EXECUTOR_STARTED,
-									Event.EXECUTOR_FINISHED,
-									Event.TRANSITIONER_STARTED,
-									Event.TRANSITIONER_FINISHED
-								},
-								engine.getListeners().get(),
-								engine);
-					}
-				}
-				
 				if (!config.getRawFunctions().isEmpty()) {
 					for (Function func : config.getRawFunctions().get()) {
+						//Raw function must have physical name
 						if (func.getPhysicalName().isEmpty())
 							throw new WerkConfigException(
 								String.format("Raw function can't have empty physicalName: [%s]", 
 												func)
 							);
-						
-						//TODO: MB allow duplicate declarations of the same function? (WARN vs throw)
 						String physicalName = func.getPhysicalName().get();
 						
 						//*) Function names are unique. Physical can't clash with logical as well.
@@ -160,7 +173,7 @@ public class MaterializedConfig {
 							String className = physicalName.substring(0, lastInd);
 							String functionName = physicalName.substring(lastInd + 1);
 							
-							Class<?> cls = WerkParameterizedTypeParser.classForName(className);
+							//Raw parameter types to find physical methods
 							Class<?>[] paramTypes;
 							if (signature.getParameters().isEmpty()) {
 								paramTypes = new Class<?>[] {};
@@ -169,11 +182,11 @@ public class MaterializedConfig {
 								paramTypes = new Class<?>[funParams.size()]; 
 								for (int i = 0; i < paramTypes.length; i++) {
 									FunctionParameter funParam = funParams.get(i);
-									//In case with raw functions it can't be empty even for basic types, 
-									//because it's a unique definition of method signature
+									//All RawFunction's parameters must have runtimeType
+									//to unambiguously define method signature
 									if (funParam.getRuntimeType().isEmpty())
 										throw new WerkConfigException(
-											String.format("Raw function parameter can't have empty runtime type: prm [%s] func [%s,]", 
+											String.format("Raw function parameter can't have empty runtime type: prm [%s] func [%s,]",
 												funParam.getName(), func)
 										);
 									
@@ -185,6 +198,7 @@ public class MaterializedConfig {
 							}
 
 							//Get method with a provided signature
+							Class<?> cls = WerkParameterizedTypeParser.classForName(className);
 							Method method = cls.getMethod(functionName, paramTypes);
 							ReturnType rt = getMethodReturnType(method, physicalName);
 							
@@ -278,32 +292,30 @@ public class MaterializedConfig {
 	}
 	
 	protected void validateRawTransitionerFunction(String calledFunctionName, Object o) throws WerkConfigException {
-		if (!steps.containsKey(calledFunctionName) && !transits.containsKey(calledFunctionName)) {
-			RawFunction rawFunction = rawFunctions.get(calledFunctionName);
-			if (rawFunction == null)
-				throw new WerkConfigException(
-					String.format("Transitioner's underlying function should be Step, Raw or other Transitioner: %s. [%s]",
-						calledFunctionName, o)
-				);
-			
-			for (RawSignature rawSignature : rawFunction.getSignatures().values())
-				if (rawSignature.retType == ReturnType.TRANSIT)
-					return;
-
+		RawFunction rawFunction = rawFunctions.get(calledFunctionName);
+		if (rawFunction == null)
 			throw new WerkConfigException(
-				String.format("Transitioner's underlying raw function should return [%s]: %s. [%s]",
-					TransitRet.class, calledFunctionName, o)
+				String.format("Transitioner's underlying function should be Step, Raw or other Transitioner: %s. [%s]",
+					calledFunctionName, o)
 			);
-		}
+		
+		for (RawSignature rawSignature : rawFunction.getSignatures().values())
+			if (rawSignature.retType == ReturnType.TRANSIT)
+				return;
+
+		throw new WerkConfigException(
+			String.format("Transitioner's underlying raw function should return [%s]: %s. [%s]",
+				TransitRet.class, calledFunctionName, o)
+		);
 	}
 	
 	protected void verifyTransitionerFunction(String functionName, Object o) throws WerkConfigException {
-		//Transitioner function is either a Transit
-		if (transits.containsKey(functionName)) return;
-		//Or a Step
-		if (steps.containsKey(functionName)) return;
-		//Or a transitioner RawFunciton
-		validateRawTransitionerFunction(functionName, o);
+		//TODO: Transitioner may refer to a step or another transitioner
+
+		//Transitioner function is either a Transit or a Step
+		if (!transits.containsKey(functionName) && !steps.containsKey(functionName))
+			//Or a transitioner RawFunction
+			validateRawTransitionerFunction(functionName, o);
 	}
 	
 	protected void validateListeners(Event[] events, List<? extends ListenerCall> listeners, Object o) throws WerkConfigException {
@@ -393,7 +405,6 @@ public class MaterializedConfig {
 	    //TODO: check signatures: signature defined by in parameters only.
 	    //e.g. f(@In int i1, @In int i2) is the same as f(@In int i1, @In int i2, @Out boolean o1) 
 	    List<OutBinding> outParameters;
-
 	    
 	}
 	
@@ -413,31 +424,9 @@ public class MaterializedConfig {
 		}
 	}
 	
-	//TODO: somewhere make sure that "BY_REF" and "BY_VAL" passing is prohibited.
-	//TODO: Somewhere here make sure there are no declarations like: "LONG String prm1"
-	//	i.e. WerkParameterType doesn't clash with runtimeType
-	//TODO: Also check that if Parameter is denoted as LIST or MAP it holds serializable types only
-	public MaterializedConfig(List<Werk2Config> configs) throws WerkConfigException {
-		//Check for duplicate signatures.
-	    //Signature is defined by in parameters, out parameter don't matter.
-	    //e.g. f(@In int i1, @In int i2) is the same as f(@In int i1, @In int i2, @Out boolean o1) 
-		//and will be considered a collision
-		checkSignatures(configs);
-
-		//Raw functions declarations need to be matched with physical functions
-		fillRawFunctions(configs);
-		
-		//Since Flows and Steps, as well as Execs and Transits can be used as underlying functions or listeners,
-		//	we need to build the entire registry of functions before checking the referential structure and call integrity.
-		//Raw functions initialized above are leaf-level and can be initialized and verified independently.
-		fillLogicalFunctions(configs);
-		
-		//!!!!!!!!!!!!!!!!!!!!!!1
-		//*) TODO: here at this point in code make sure the Call Indirection Graph is Acyclic
-		//		Call indirection graph not to be confused with Flow Transition Graph, latter can be acyclic.
-		//*) MB: Union-find approach? not much benefit since it's initialization-only workload
-		//!!!!!!!!!!!!!!!!!!!!!!1
-		
+	protected void validateFunctions(List<Werk2Config> configs) throws WerkConfigException {
+		//TODO: finish implementation
+		//Check the referential structure and call integrity
 		for (Werk2Config config : configs) {
 			//1. Validate Transit and exec functions
 			if (!config.getExecs().isEmpty()) {
@@ -482,13 +471,13 @@ public class MaterializedConfig {
 			//2. Validate Steps
 			if (!config.getSteps().isEmpty()) {
 				for (Step step : config.getSteps().get()) {
-					//TODO: validate Transitioner call and type safety
+					//validate Transitioner call and type safety
 					validateCall(step.getTransit(), true, step);
 					
-					if (!step.getExecBlocks().isEmpty()) {
-						//TODO: validate ExecutionBlock calls and type safety
-						for (BatchCall block : step.getExecBlocks().get())
-							validateBatchCall(block, step);
+					if (!step.getExecBlock().isEmpty()) {
+						//validate ExecutionBlock calls and type safety
+						BatchCall block = step.getExecBlock().get();
+						validateBatchCall(block, step);
 					}
 					
 					//validate Listeners calls and type safety
@@ -536,5 +525,49 @@ public class MaterializedConfig {
 				}
 			}
 		}
+	}
+	
+	//TODO: implement
+	protected void validateCallIndirectionGraph() {
+		//Entry points
+		//	Engine Listeners 
+		//	 
+	}
+	
+	//TODO: ExtendedFlow and ExtendedStep currently are not a part of config, should be added
+	//			Corresponding checks should be added for ExtendedFlow and ExtendedStep
+	//TODO: auto-cast for basic types e.g. Integer -> long at invocation time
+	//TODO: Listener calls definitions - inject underlying Flow/Step/Exec/Transit parameters from upper levels
+	//			also special metrics - e.g. duration_ms/duration_ns
+	//TODO: somewhere make sure that "BY_REF" and "BY_VAL" passing is prohibited.
+	//TODO: Somewhere here make sure there are no declarations like: "LONG String prm1"
+	//	i.e. WerkParameterType doesn't clash with runtimeType
+	//TODO: Also check that if Parameter is denoted as LIST or MAP it holds serializable types only
+	public MaterializedConfig(List<Werk2Config> configs) throws WerkConfigException {
+		//Check for duplicate overloaded signatures for the same function.
+	    //Details can be found in "Docs/NotesOnTypeSafety.md"
+		//TODO: make sure the implementation matches the document
+		checkSignatures(configs);
+		
+		//Raw functions declarations need to be matched with physical functions
+		fillRawFunctions(configs);
+		
+		//Since Flows and Steps, as well as Execs and Transits can be used as underlying functions or listeners,
+		//	we need to build the entire registry of functions before checking the referential structure and call integrity.
+		//Raw functions initialized above are leaf-level and can be initialized and verified independently.
+		fillLogicalFunctions(configs);
+		
+		//!!!!!!!!!!!!!!!!!!!!!!1
+		//*) TODO: here at this point in code make sure the Call Indirection Graph is Acyclic
+		//		Call indirection graph not to be confused with Flow Transition Graph, latter can be acyclic.
+		//!!!!!!!!!!!!!!!!!!!!!!1
+		//TODO: 
+		validateCallIndirectionGraph();
+
+		//Ensure call integrity and type safety
+		validateFunctions(configs);
+		
+		//Ensure one and only one Engine is declared, validate listeners
+		fillEngine(configs);
 	}
 }

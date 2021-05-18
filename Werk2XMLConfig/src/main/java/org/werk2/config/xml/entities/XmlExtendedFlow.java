@@ -8,12 +8,11 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.werk2.config.calls.Call;
 import org.werk2.config.entities.ExtendedFlow;
 import org.werk2.config.entities.ListenerCall;
+import org.werk2.config.entities.StepCall;
 import org.werk2.config.functions.FunctionSignature;
 import org.werk2.config.xml.XmlDocumented;
-import org.werk2.config.xml.calls.XmlCall;
 import org.werk2.config.xml.functions.XmlFunctionSignature;
 
 @XmlType(name = "extendedFlow")
@@ -30,10 +29,10 @@ public class XmlExtendedFlow extends XmlDocumented implements ExtendedFlow {
 	public Boolean dropOldSignatures;
 
 	@XmlElement(required = false)
-    public XmlCall newFirstStep;
+    public XmlStepCall newFirstStep;
     
 	@XmlElement(required = false)
-    public List<XmlCall> addStep;
+    public List<XmlStepCall> addStep;
 	@XmlElement(required = false, defaultValue = "false")
 	public Boolean dropOldSteps;
     
@@ -66,12 +65,12 @@ public class XmlExtendedFlow extends XmlDocumented implements ExtendedFlow {
 	}
 
 	@Override
-	public Optional<Call> getNewFirstStep() {
+	public Optional<StepCall> getNewFirstStep() {
 		return newFirstStep == null ? Optional.empty() : Optional.of(newFirstStep);
 	}
 
 	@Override
-	public Optional<List<? extends Call>> getAddSteps() {
+	public Optional<List<? extends StepCall>> getAddSteps() {
 		return addStep == null ? Optional.empty() : Optional.of(addStep);
 	}
 

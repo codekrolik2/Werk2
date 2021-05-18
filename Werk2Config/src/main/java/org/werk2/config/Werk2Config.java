@@ -5,6 +5,8 @@ import java.util.Optional;
 
 import org.werk2.config.engine.Engine;
 import org.werk2.config.entities.Exec;
+import org.werk2.config.entities.ExtendedFlow;
+import org.werk2.config.entities.ExtendedStep;
 import org.werk2.config.entities.Flow;
 import org.werk2.config.entities.Step;
 import org.werk2.config.entities.Transit;
@@ -27,6 +29,14 @@ public interface Werk2Config extends Documented {
      * @return Steps
      */
     public Optional<? extends List<? extends Step>> getSteps();
+    /**
+     * @return Extended Flows
+     */
+    public Optional<? extends List<? extends ExtendedFlow>> getExtendedFlows();
+    /**
+     * @return Extended Steps
+     */
+    public Optional<? extends List<? extends ExtendedStep>> getExtendedSteps();
     /**
      * @return Executioner functions
      */

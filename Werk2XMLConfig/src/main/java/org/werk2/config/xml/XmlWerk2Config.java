@@ -11,12 +11,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.werk2.config.Werk2Config;
 import org.werk2.config.engine.Engine;
 import org.werk2.config.entities.Exec;
+import org.werk2.config.entities.ExtendedFlow;
+import org.werk2.config.entities.ExtendedStep;
 import org.werk2.config.entities.Flow;
 import org.werk2.config.entities.Step;
 import org.werk2.config.entities.Transit;
 import org.werk2.config.functions.Function;
 import org.werk2.config.xml.engine.XmlEngine;
 import org.werk2.config.xml.entities.XmlExec;
+import org.werk2.config.xml.entities.XmlExtendedFlow;
+import org.werk2.config.xml.entities.XmlExtendedStep;
 import org.werk2.config.xml.entities.XmlFlow;
 import org.werk2.config.xml.entities.XmlStep;
 import org.werk2.config.xml.entities.XmlTransit;
@@ -31,6 +35,10 @@ public class XmlWerk2Config extends XmlDocumented implements Werk2Config {
     public List<XmlFlow> flow;
 	@XmlElement(required = false)
     public List<XmlStep> step;
+	@XmlElement(required = false)
+    public List<XmlExtendedFlow> extendedFlow;
+	@XmlElement(required = false)
+    public List<XmlExtendedStep> extendedStep;
 	@XmlElement(required = false)
     public List<XmlExec> exec;
 	@XmlElement(required = false)
@@ -51,6 +59,16 @@ public class XmlWerk2Config extends XmlDocumented implements Werk2Config {
 	@Override
 	public Optional<List<? extends Step>> getSteps() {
 		return step == null ? Optional.empty() : Optional.of(step);
+	}
+
+	@Override
+	public Optional<? extends List<? extends ExtendedFlow>> getExtendedFlows() {
+		return extendedFlow == null ? Optional.empty() : Optional.of(extendedFlow);
+	}
+
+	@Override
+	public Optional<? extends List<? extends ExtendedStep>> getExtendedSteps() {
+		return extendedStep == null ? Optional.empty() : Optional.of(extendedStep);
 	}
 
 	@Override

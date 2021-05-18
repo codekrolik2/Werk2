@@ -21,7 +21,7 @@ public interface Step extends Documented {
     /**
      * @return Execution blocks
      */
-    public Optional<? extends List<? extends BatchCall>> getExecBlocks();
+    public Optional<BatchCall> getExecBlock();
     /**
      * @return Transitioner
      */

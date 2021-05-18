@@ -32,9 +32,9 @@ public class XmlExtendedStep extends XmlDocumented implements ExtendedStep {
 	public Boolean dropOldSignatures;
 	
 	@XmlElement(required = false)
-    public List<XmlBatchCall> addExecBlock;
+    public XmlBatchCall addExecBlock;
 	@XmlElement(required = false, defaultValue = "false")
-	public Boolean dropOldExecs;
+	public Boolean dropOldExec;
 
 	@XmlElement(required = false)
     public XmlCall newTransit;
@@ -68,13 +68,13 @@ public class XmlExtendedStep extends XmlDocumented implements ExtendedStep {
 	}
 
 	@Override
-	public Optional<List<? extends BatchCall>> getAddExecBlocks() {
+	public Optional<BatchCall> getAddExecBlock() {
 		return addExecBlock == null ? Optional.empty() : Optional.of(addExecBlock);
 	}
 
 	@Override
-	public Optional<Boolean> getDropOldExecBlocks() {
-		return Optional.of(dropOldExecs);
+	public Optional<Boolean> getDropOldExecBlock() {
+		return Optional.of(dropOldExec);
 	}
 
 	@Override

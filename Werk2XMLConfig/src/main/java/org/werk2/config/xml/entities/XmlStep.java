@@ -24,7 +24,7 @@ public class XmlStep extends XmlDocumented implements Step {
 	@XmlElement(required = true)
     public XmlFunction function;
 	@XmlElement(required = false)
-    public List<XmlBatchCall> execBlock;
+    public XmlBatchCall execBlock;
 	@XmlElement(required = true)
     public XmlCall transit;
 
@@ -39,7 +39,7 @@ public class XmlStep extends XmlDocumented implements Step {
 	}
 
 	@Override
-	public Optional<List<? extends BatchCall>> getExecBlocks() {
+	public Optional<BatchCall> getExecBlock() {
 		return execBlock == null ? Optional.empty() : Optional.of(execBlock);
 	}
 

@@ -286,7 +286,7 @@ public class WerkAnnotationScanner {
 		        				)
 		        			);
 
-					//return type should be either int or Integer
+					//make sure ReturnType is corect
 					Type returnType = method.getGenericReturnType();
 					checkReturnType(returnType, physicalFunctionName);
 					

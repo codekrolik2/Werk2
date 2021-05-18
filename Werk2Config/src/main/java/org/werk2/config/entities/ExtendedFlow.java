@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.werk2.config.Documented;
-import org.werk2.config.calls.Call;
 import org.werk2.config.functions.FunctionSignature;
 
 /**
@@ -35,11 +34,11 @@ public interface ExtendedFlow extends Documented {
 	/**
 	 * @return New First step
 	 */
-    public Optional<? extends Call> getNewFirstStep();
+    public Optional<? extends StepCall> getNewFirstStep();
     /**
      * @return Additional steps
      */
-    public Optional<? extends List<? extends Call>> getAddSteps();
+    public Optional<? extends List<? extends StepCall>> getAddSteps();
     /**
      * default false
      * @return true - override (do not use) steps defined on SuperFlow levels

@@ -34,12 +34,12 @@ public interface ExtendedStep extends Documented {
 	/**
 	 * @return Additional execution blocks
 	 */
-    public Optional<? extends List<? extends BatchCall>> getAddExecBlocks();
+    public Optional<BatchCall> getAddExecBlock();
     /**
      * default false
      * @return true - override (do not use) execution blocks defined on SuperStep levels
      */
-	public Optional<Boolean> getDropOldExecBlocks();
+	public Optional<Boolean> getDropOldExecBlock();
 	/**
 	 * @return New Transitioner
 	 */
