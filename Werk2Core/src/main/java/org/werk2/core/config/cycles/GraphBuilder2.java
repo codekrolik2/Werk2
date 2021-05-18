@@ -22,62 +22,7 @@ import org.werk2.config.entities.StepCall;
 import org.werk2.config.entities.Transit;
 import org.werk2.config.functions.Function;
 
-public class GraphBuilder {
-	
-	/*
-CallIndirectionGraph
-
-{definition}
-[[call]]
-
-Flow
-	{function->functionName}
-	1 firstStep StepCall
-	* step StepCall
-	* listener Listener
-
-Step
-	{function->functionName}
-	1 execBlock BatchCall
-	1 transit Call
-	* listener Listener
-
-Exec
-	{execFunctionName}
-	[[calledFunctionName]]
-	* listener Listener
-
-Transit
-	{transitFunctionName}
-	[[calledFunctionName]]
-	* listener Listener
-
-ExtendedFlow
-	{newFunctionName}
-	1 newFirstStep StepCall
-	* addStep StepCall
-	* addListener Listener
-	
-ExtendedStep
-	{newFunctionName}
-	* addExecBlock BatchCall
-	1 newTransit Call
-	* addListener Listener
-
--------------------------------------------------
-
-	Listener
-	StepCall
-	BatchCall
-	Call
-
-Listener -> BatchCall
-StepCall -> BatchCall
-BatchCall -> Call
-
-Call -> [[functionName]]
-
-	 */
+public class GraphBuilder2 {
 	protected void addFunction(GraphNode node, String functionName) {
 		node.getLinks().add(functionName);
 	}
