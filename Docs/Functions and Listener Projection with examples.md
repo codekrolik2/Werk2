@@ -1,5 +1,5 @@
 This Markdown document was created with https://stackedit.io. If the viewer of your choice doesn't support features like [mermaid diagrams](https://mermaid-js.github.io/mermaid/#/), please open it on [StackEdit](https://stackedit.io).
-# Functions and Listener Projection with examples
+# Functions, Listener Projection and Listener Inheritance with examples
 Let's look at the standard flow and listener projection tree.
 ```mermaid
 graph LR
@@ -42,6 +42,7 @@ classDiagram
 Call_Indirection ..> Call_Indirection
 Standard_Flow --> Standard_Flow
 ```
+---
 #### Example config:
 ```mermaid
 classDiagram
@@ -169,7 +170,7 @@ FF_F2: ListenerCall
 class TransitFunction4
 class ExecFunction5
 ```
-
+---
 Let's review the configuration shown above and try to emulate direct invocation of `Flow1` with all the subsequent calls and listeners.
 The order of invocation (with listeners) will be as follows:
 ```
@@ -253,3 +254,144 @@ Thus, `ExecFunction2` has no listeners inherited because it has not ancestors an
 - Lines 56-63:  Now `Flow1` calls `Step4`, which in its turn calls `Executor3` and `TransitFunction4`.
 An important thing to note about `Step4` and `Executor3` is that both have `OverrideListeners` flag set, which means they ignore projected listeners from ancestor levels. However, even with that flag their own listeners are still projected to their descendants. That's why for both `Step4` and `Executor3` only their own listeners are being used. At the same time, `TS_S4` and `TF_S4` listeners, defined at `STEP4` for `TRANSITIONER_STARTED` and `TRANSITIONER_FINISHED` events, correspondingly, are still projected to anonymous `Transitioner` wrapping raw `TransitFunction4`.
 - Line 64: `Flow1` is finished.
+
+## Extended Flows and Steps: Listener Inheritance
+Another feature supported by Werk is `Step` and `Flow` extension. In the context of Listener projection we can think similarly of both `ExtendedStep` and `ExtendedFlow`.
+The properties of interest are:
+```
+Extended (Step or Flow) {
+    ...
+    List<ListenerCall> addListeners;
+    Boolean dropOldListeners;
+    ...
+}
+```
+The idea is pretty simple here:
+Adding Listeners to `addListeners` list allows to extend original set of listeners defined on SuperStep/SuperFlow level. If the flag `dropOldListeners` is set, instead of extending the list defined on upper levels it's being overridden, i.e. only listeners defined in `addListeners` collection will be applied to the subclass.
+This mechanism is listener inheritance and is completely orthogonal to listener projection.
+A simple way to think about listener inheritance is to view it as a purely logical concept, and in reality after configuration initialization there is no shared context per se between `Flows` and `ExtendedFlows `, and `Steps` and `ExtendedSteps`. In fact, any inheritance is getting denormalized into individual Flow and Step configurations, an example of which is shown below. Therefore, there is no clashing or ambiguity with listener projection model to speak of.
+Having an idea of how this denormalization works is helpful to understand that in fact Listener Inheritance is completely decoupled from Listener Projection.
+Please note how all inherited listeners are overridden at `Flow4`, while `Flow5` inherits only listeners of `Flow4`. 
+Listener inheritance for Steps works exactly in the same way.
+
+---
+#### Inheritance
+
+```mermaid
+classDiagram
+Flow1 <|-- Flow2
+Flow2 <|-- Flow3
+Flow3 <|-- Flow4
+Flow4 <|-- Flow5
+
+class Flow1
+Flow1 : FLOW_STARTED FS_F1
+Flow1 : FLOW_FINISHED FF_F1
+Flow1 : STEP_STARTED SS_F1
+Flow1 : STEP_FINISHED SF_F1
+Flow1 : EXECUTOR_STARTED ES_F1
+Flow1 : EXECUTOR_FINISHED EF_F1
+Flow1 : TRANSITIONER_STARTED TS_F1
+Flow1 : TRANSITIONER_FINISHED TF_F1
+
+class Flow2
+Flow2 : FLOW_STARTED FS_F2
+Flow2 : FLOW_FINISHED FF_F2
+Flow2 : STEP_STARTED SS_F2
+Flow2 : STEP_FINISHED SF_F2
+Flow2 : EXECUTOR_STARTED ES_F2
+Flow2 : EXECUTOR_FINISHED EF_F2
+Flow2 : TRANSITIONER_STARTED TS_F2
+Flow2 : TRANSITIONER_FINISHED TF_F2
+
+class Flow3
+Flow3 : FLOW_STARTED FS_F3
+Flow3 : FLOW_FINISHED FF_F3
+Flow3 : STEP_STARTED SS_F3
+Flow3 : STEP_FINISHED SF_F3
+Flow3 : EXECUTOR_STARTED ES_F3
+Flow3 : EXECUTOR_FINISHED EF_F3
+Flow3 : TRANSITIONER_STARTED TS_F3
+Flow3 : TRANSITIONER_FINISHED TF_F3
+
+class Flow4
+Flow4 : [DropOldListeners]
+Flow4 : FLOW_STARTED FS_F4
+Flow4 : FLOW_FINISHED FF_F4
+Flow4 : STEP_STARTED SS_F4
+Flow4 : STEP_FINISHED SF_F4
+Flow4 : EXECUTOR_STARTED ES_F4
+Flow4 : EXECUTOR_FINISHED EF_F4
+Flow4 : TRANSITIONER_STARTED TS_F4
+Flow4 : TRANSITIONER_FINISHED TF_F4
+
+class Flow5
+Flow5 : FLOW_STARTED FS_F5
+Flow5 : FLOW_FINISHED FF_F5
+Flow5 : STEP_STARTED SS_F5
+Flow5 : STEP_FINISHED SF_F5
+Flow5 : EXECUTOR_STARTED ES_F5
+Flow5 : EXECUTOR_FINISHED EF_F5
+Flow5 : TRANSITIONER_STARTED TS_F5
+Flow5 : TRANSITIONER_FINISHED TF_F5
+```
+---
+#### Denormalized (same structure):
+
+```mermaid
+classDiagram
+
+class Flow1
+Flow1 : FLOW_STARTED FS_F1
+Flow1 : FLOW_FINISHED FF_F1
+Flow1 : STEP_STARTED SS_F1
+Flow1 : STEP_FINISHED SF_F1
+Flow1 : EXECUTOR_STARTED ES_F1
+Flow1 : EXECUTOR_FINISHED EF_F1
+Flow1 : TRANSITIONER_STARTED TS_F1
+Flow1 : TRANSITIONER_FINISHED TF_F1
+
+class Flow2
+Flow2 : FLOW_STARTED {FS_F1, FS_F2}
+Flow2 : FLOW_FINISHED {FF_F1, FF_F2}
+Flow2 : STEP_STARTED {SS_F1, SS_F2}
+Flow2 : STEP_FINISHED {SF_F1, SF_F2}
+Flow2 : EXECUTOR_STARTED {ES_F1, ES_F2}
+Flow2 : EXECUTOR_FINISHED {EF_F1, EF_F2}
+Flow2 : TRANSITIONER_STARTED {TS_F1, TS_F2}
+Flow2 : TRANSITIONER_FINISHED {TF_F1, TF_F2}
+
+class Flow3
+Flow3 : FLOW_STARTED {FS_F1, FS_F2, FS_F3}
+Flow3 : FLOW_FINISHED {FF_F1, FF_F2, FF_F3}
+Flow3 : STEP_STARTED {SS_F1, SS_F2, SS_F3}
+Flow3 : STEP_FINISHED {SF_F1, SF_F2, SF_F3}
+Flow3 : EXECUTOR_STARTED {ES_F1, ES_F2, ES_F3}
+Flow3 : EXECUTOR_FINISHED {EF_F1, EF_F2, EF_F3}
+Flow3 : TRANSITIONER_STARTED {TS_F1, TS_F2, TS_F3}
+Flow3 : TRANSITIONER_FINISHED {TF_F1, TF_F2, TF_F3}
+```
+```mermaid
+classDiagram
+class Flow4
+Flow4 : [DropOldListeners]
+Flow4 : FLOW_STARTED FS_F4
+Flow4 : FLOW_FINISHED FF_F4
+Flow4 : STEP_STARTED SS_F4
+Flow4 : STEP_FINISHED SF_F4
+Flow4 : EXECUTOR_STARTED ES_F4
+Flow4 : EXECUTOR_FINISHED EF_F4
+Flow4 : TRANSITIONER_STARTED TS_F4
+Flow4 : TRANSITIONER_FINISHED TF_F4
+
+class Flow5
+Flow5 : FLOW_STARTED {FS_F4, FS_F5}
+Flow5 : FLOW_FINISHED {FF_F4, FF_F5}
+Flow5 : STEP_STARTED {SS_F4, SS_F5}
+Flow5 : STEP_FINISHED {SF_F4, SF_F5}
+Flow5 : EXECUTOR_STARTED {ES_F4, ES_F5}
+Flow5 : EXECUTOR_FINISHED {EF_F4, EF_F5}
+Flow5 : TRANSITIONER_STARTED {TS_F4, TS_F5}
+Flow5 : TRANSITIONER_FINISHED {TF_F4, TF_F5}
+```
+
