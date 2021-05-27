@@ -39,8 +39,8 @@ More examples are presented below.
 #### Legend:
 ```mermaid
 classDiagram
-Call_Indirection ..> Call_Indirection
-Standard_Flow --> Standard_Flow
+Call_Indirection ..> Call_Indirection_
+Standard_Flow --> Standard_Flow_
 ```
 ---
 #### Example config:
@@ -59,7 +59,7 @@ Step1 --> Executor1
 Step1 --> Transitioner1
 Step2 --> Executor2
 Step2 --> Transitioner2
-Transitioner3 --> TransitFunction1
+Transitioner3 ..> TransitFunction1
 Step4 --> Executor3
 Step4 --> TransitFunction4
 Transitioner1 ..> Step2
@@ -165,6 +165,7 @@ Transitioner2 : TRANSITIONER_FINISHED TF_T2
 
 class TransitFunction1
 class ExecFunction2
+class ExecFunction3
 class FF_F2
 FF_F2: ListenerCall
 class TransitFunction4
@@ -254,6 +255,45 @@ Thus, `ExecFunction2` has no listeners inherited because it has not ancestors an
 - Lines 56-63:  Now `Flow1` calls `Step4`, which in its turn calls `Executor3` and `TransitFunction4`.
 An important thing to note about `Step4` and `Executor3` is that both have `OverrideListeners` flag set, which means they ignore projected listeners from ancestor levels. However, even with that flag their own listeners are still projected to their descendants. That's why for both `Step4` and `Executor3` only their own listeners are being used. At the same time, `TS_S4` and `TF_S4` listeners, defined at `STEP4` for `TRANSITIONER_STARTED` and `TRANSITIONER_FINISHED` events, correspondingly, are still projected to anonymous `Transitioner` wrapping raw `TransitFunction4`.
 - Line 64: `Flow1` is finished.
+
+Example: Engine directly running Step2 as a Flow:
+```
+01. Anonymous FLOW_STARTED { FS_E }
+02.   Step2 STEP_STARTED { SS_E, SS_S2 }
+03.     Executor2 EXECUTOR_STARTED { ES_E, ES_S2, ES_E2 }
+04.       ExecFunction3()
+05.     Executor2 EXECUTOR_FINISHED { EF_E, EF_S2, EF_E2 }
+06.     Transitioner2 TRANSITIONER_STARTED { TS_E, TS_S2, TS_T2 }
+07.       TransitFunction4()
+08.     Transitioner2 TRANSITIONER_FINISHED { TF_E, TF_S2, TF_T2 }
+09.   Step2 STEP_FINISHED { SF_E, SF_S2 }
+10. Anonymous FLOW_FINISHED { FF_E }
+```
+
+Example: Engine directly running raw ExecFunction3 as a Flow:
+```
+01. Anonymous FLOW_STARTED { FS_E }
+02.   Anonymous STEP_STARTED { SS_E }
+03.     Anonymous EXECUTOR_STARTED { ES_E }
+04.       ExecFunction3()
+05.     Anonymous EXECUTOR_FINISHED { EF_E }
+06.     Anonymous TRANSITIONER_STARTED { TS_E }
+07.       WerkNoOpTransitFunction()
+08.     Anonymous TRANSITIONER_FINISHED { TF_E }
+09.   Anonymous STEP_FINISHED { SF_E }
+10. Anonymous FLOW_FINISHED { FF_E }
+```
+
+Example: Engine directly running raw TransitFunction4 as a Flow:
+```
+01. Anonymous FLOW_STARTED { FS_E }
+02.   Anonymous STEP_STARTED { SS_E }
+03.     Anonymous TRANSITIONER_STARTED { TS_E }
+04.       TransitFunction4()
+05.     Anonymous TRANSITIONER_FINISHED { TF_E }
+06.   Anonymous STEP_FINISHED { SF_E }
+07. Anonymous FLOW_FINISHED { FF_E }
+```
 
 ## Extended Flows and Steps: Listener Inheritance
 Another feature supported by Werk is `Step` and `Flow` extension. In the context of Listener projection we can think similarly of both `ExtendedStep` and `ExtendedFlow`.

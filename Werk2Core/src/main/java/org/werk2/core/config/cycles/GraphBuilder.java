@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.werk2.common.WerkConfigException;
 import org.werk2.config.Werk2Config;
 import org.werk2.config.calls.BatchCall;
 import org.werk2.config.calls.Call;
@@ -22,71 +23,99 @@ import org.werk2.config.entities.StepCall;
 import org.werk2.config.entities.Transit;
 import org.werk2.config.functions.Function;
 
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 public class GraphBuilder {
-	
-	/*
-CallIndirectionGraph
-
-{definition}
-[[call]]
-
-Flow
-	{function->functionName}
-	1 firstStep StepCall
-	* step StepCall
-	* listener Listener
-
-Step
-	{function->functionName}
-	1 execBlock BatchCall
-	1 transit Call
-	* listener Listener
-
-Exec
-	{execFunctionName}
-	[[calledFunctionName]]
-	* listener Listener
-
-Transit
-	{transitFunctionName}
-	[[calledFunctionName]]
-	* listener Listener
-
-ExtendedFlow
-	{newFunctionName}
-	1 newFirstStep StepCall
-	* addStep StepCall
-	* addListener Listener
-	
-ExtendedStep
-	{newFunctionName}
-	* addExecBlock BatchCall
-	1 newTransit Call
-	* addListener Listener
-
--------------------------------------------------
-
-	Listener
-	StepCall
-	BatchCall
-	Call
-
-Listener -> BatchCall
-StepCall -> BatchCall
-BatchCall -> Call
-
-Call -> [[functionName]]
-
+	/**
+	 * Denormalized Node 
+	 * @author jamirov 
 	 */
-	protected void addFunction(GraphNode node, String functionName) {
-		node.getLinks().add(functionName);
+	@RequiredArgsConstructor @Getter
+	class DNNode {
+		@NonNull protected String functionName;
+		/** Entity's own and inherited links. No ancestor-projected listeners or listeners for descendant events. */
+		protected List<String> links = new ArrayList<>();
+		/** Entity's own and inherited listeners. No ancestor-projected listeners. */
+		protected List<ListenerCall> allListeners = new ArrayList<>();
+
+		public GraphNode cloneToGraphNode() {
+			GraphNode node = new GraphNode(functionName);
+			node.setLinks(new ArrayList<>(links));
+			return node;
+		}
 	}
 	
-	protected void addCall(GraphNode node, Call call) {
+	//TODO: initial structure is defined by original traversal - includes inheritance decoupling
+	//TODO: In the final version different versions of the same step/flow may emerge due to listener projection
+	//			i.e. with different sets of listeners
+	
+	//TODO: Tree structure for listeners: Engine-defined Listeners, Flow-defined Listeners, Step-defined Listeners
+	//		should be applied to all sub-Entities, unless overridden
+	
+	//TODO:
+	//Raw functions don't call listeners
+	//Listener projection: Engine -> Flow -> Step -> Transit
+	//                                          \-> ExecBlock -> Exec
+	
+	//TODO: apply listener projection
+	
+	
+	public List<GraphNode> buildGraph(List<Werk2Config> configs, Map<String, DNNode> denormalizedNodes) throws WerkConfigException {
+		List<GraphNode> retList = new ArrayList<>();
+		
+		//Find engine
+		Engine engine = null;
+		for (Werk2Config config : configs) {
+			if (!config.getEngine().isEmpty()) {
+				if (engine != null)
+					throw new WerkConfigException(
+						String.format("Only one engine is permitted [%s] [%s]", 
+							config.getEngine().get().toString(), engine.toString())
+					);
+			}
+		}
+		
+		//regular - functionName
+		//with projection - projFun1->projFun2->projFun3-> ... ->functionName
+		
+		//Add all nodes as first-class citizens (direct calls)
+		for (DNNode node : denormalizedNodes.values())
+			retList.add(node.cloneToGraphNode());
+
+		
+		return retList;
+	}
+	
+	protected void projectFlow() {
+		//
+	}
+	
+	protected void projectStep() {
+		//
+	}
+	
+	protected void projectExec() {
+		//
+	}
+	
+	protected void projectTransit() {
+		//
+	}
+	
+	//-------------------------------------------------------------------
+
+	// TODO: ensure correctness
+	protected void addFunction(DNNode node, String functionName) {
+		node.getLinks().add(node.getFunctionName() + "->" + functionName);
+	}
+	
+	protected void addCall(DNNode node, Call call) {
 		addFunction(node, call.getFunctionName());
 	}
 	
-	protected void addBatchCall(GraphNode node, BatchCall batchCall) {
+	protected void addBatchCall(DNNode node, BatchCall batchCall) {
 		if (!batchCall.getCalls().isEmpty())
 		for (Call call : batchCall.getCalls().get())
 			addCall(node, call);
@@ -94,36 +123,34 @@ Call -> [[functionName]]
 		if (!batchCall.getBatches().isEmpty())
 		for (BatchCall batch : batchCall.getBatches().get())
 			addBatchCall(node, batch);
-
-		node.getLinks().add(null);
 	}
 	
-	protected void addListenerCall(GraphNode node, ListenerCall listenerCall, Event[] events) {
+	protected void addListenerCalls(DNNode node, List<? extends ListenerCall> listenerCalls, Event[] events) {
 		Set<Event> eventsSet = new HashSet<>();
 		for (Event event : events)
 			eventsSet.add(event);
-		for (Event event : listenerCall.getEvents()) {
-			if (eventsSet.contains(event)) {
-				addBatchCall(node, listenerCall);
-				break;
+
+		for (ListenerCall listenerCall : listenerCalls) {
+			for (Event event : listenerCall.getEvents()) {
+				if (eventsSet.contains(event)) {
+					addBatchCall(node, listenerCall);
+					break;
+				}
 			}
 		}
-	}
-	
-	class Ownership {
-		Engine engine;
-		Flow flow;
-		Step step;
-		ExtendedFlow eFlow;
-		ExtendedStep eStep;
-		Transit transit;
-		Exec exec;
 		
+		node.getAllListeners().addAll(listenerCalls);
 	}
-	
-	//TODO: Tree structure for listeners: Engine-defined Listeners, Flow-defined Listeners, Step-defined Listeners
-	//		should be applied to all sub-Entities, unless overridden
-	public List<GraphNode> buildGraph(List<Werk2Config> configs) {
+
+	/**
+	 * Traverse Werk configurations, identify functions,
+	 * denormalize inheritance structures for ExtendedSteps and ExtendedFlows,
+	 * represent all functions in their denormalized form in a map indexed by their names.
+	 * 
+	 * @param configs Werk configuration profiles
+	 * @return Map of function names to denormalized nodes.
+	 */
+	protected Map<String, DNNode> getAllDNNodes(List<Werk2Config> configs) {
 		//Maps of steps and flows for lookup by functionName
 		Map<String, Step> steps = new HashMap<>();
 		Map<String, ExtendedStep> extendedSteps = new HashMap<>();
@@ -149,25 +176,63 @@ Call -> [[functionName]]
 				extendedSteps.put(eStep.getNewFunctionName(), eStep);
 		}
 		
-		//TODO:
-		//Raw functions don't call listeners
-		//Listener summation: Engine -> Flow -> Step -> Transit
-		//                                          \-> ExecBlock -> Exec
+		Map<String, DNNode> dnList = new HashMap<>();
 		
-		List<GraphNode> retList = new ArrayList<>();
 		for (Werk2Config config : configs) {
 			//Raw Functions
 			if (!config.getRawFunctions().isEmpty())
 			for (Function rawFunction : config.getRawFunctions().get()) {
-				GraphNode node = new GraphNode(rawFunction.getFunctionName());
-				retList.add(node);
+				DNNode node = new DNNode(rawFunction.getFunctionName());
+				dnList.put(node.getFunctionName(), node);
 			}
-			
+
+			//Exec
+			if (!config.getExecs().isEmpty())
+			for (Exec exec : config.getExecs().get()) {
+				DNNode node = new DNNode(exec.getExecFunctionName());
+				dnList.put(node.getFunctionName(), node);
+				
+				addFunction(node, exec.getCalledFunctionName());
+
+				if (!exec.getListeners().isEmpty())
+					addListenerCalls(node, exec.getListeners().get(), 
+							new Event[] { Event.EXECUTOR_STARTED, Event.EXECUTOR_FINISHED });
+			}
+
+			//Transit
+			if (!config.getTransits().isEmpty())
+			for (Transit transit : config.getTransits().get()) {
+				DNNode node = new DNNode(transit.getTransitFunctionName());
+				dnList.put(node.getFunctionName(), node);
+				
+				addFunction(node, transit.getCalledFunctionName());
+
+				if (!transit.getListeners().isEmpty())
+					addListenerCalls(node, transit.getListeners().get(), 
+							new Event[] { Event.TRANSITIONER_STARTED, Event.TRANSITIONER_FINISHED });
+			}
+
+			//Step
+			if (!config.getSteps().isEmpty())
+			for (Step step : config.getSteps().get()) {
+				DNNode node = new DNNode(step.getFunction().getFunctionName());
+				dnList.put(node.getFunctionName(), node);
+				
+				addCall(node, step.getTransit());
+
+				if (!step.getExecBlock().isEmpty())
+					addBatchCall(node, step.getExecBlock().get());
+
+				if (!step.getListeners().isEmpty())
+					addListenerCalls(node, step.getListeners().get(), 
+							new Event[] { Event.STEP_STARTED, Event.STEP_FINISHED });
+			}
+
 			//Flows
 			if (!config.getFlows().isEmpty())
 			for (Flow flow : config.getFlows().get()) {
-				GraphNode node = new GraphNode(flow.getFunction().getFunctionName());
-				retList.add(node);
+				DNNode node = new DNNode(flow.getFunction().getFunctionName());
+				dnList.put(node.getFunctionName(), node);
 				
 				addCall(node, flow.getFirstStep());
 
@@ -176,64 +241,24 @@ Call -> [[functionName]]
 						addCall(node, step);
 
 				if (!flow.getListeners().isEmpty())
-					for (ListenerCall listener : flow.getListeners().get())
-						addListenerCall(node, listener, new Event[] { Event.FLOW_STARTED, Event.FLOW_FINISHED });
+					addListenerCalls(node, flow.getListeners().get(), 
+							new Event[] { Event.FLOW_STARTED, Event.FLOW_FINISHED });
 			}
 			
-			//Step
-			if (!config.getSteps().isEmpty())
-			for (Step step : config.getSteps().get()) {
-				GraphNode node = new GraphNode(step.getFunction().getFunctionName());
-				retList.add(node);
-				
-				addCall(node, step.getTransit());
-
-				if (!step.getExecBlock().isEmpty())
-					addBatchCall(node, step.getExecBlock().get());
-
-				if (!step.getListeners().isEmpty())
-					for (ListenerCall listener : step.getListeners().get())
-						addListenerCall(node, listener, new Event[] { Event.STEP_STARTED, Event.STEP_FINISHED });
-			}
-
-			//Exec
-			if (!config.getExecs().isEmpty())
-			for (Exec exec : config.getExecs().get()) {
-				GraphNode node = new GraphNode(exec.getExecFunctionName());
-				retList.add(node);
-				
-				addFunction(node, exec.getCalledFunctionName());
-
-				if (!exec.getListeners().isEmpty())
-					for (ListenerCall listener : exec.getListeners().get())
-						addListenerCall(node, listener, new Event[] { Event.EXECUTOR_STARTED, Event.EXECUTOR_FINISHED });
-			}
-
-			//Transit
-			if (!config.getTransits().isEmpty())
-			for (Transit transit : config.getTransits().get()) {
-				GraphNode node = new GraphNode(transit.getTransitFunctionName());
-				retList.add(node);
-				
-				addFunction(node, transit.getCalledFunctionName());
-
-				if (!transit.getListeners().isEmpty())
-					for (ListenerCall listener : transit.getListeners().get())
-						addListenerCall(node, listener, new Event[] { Event.TRANSITIONER_STARTED, Event.TRANSITIONER_FINISHED });
-			}
-
 			//Extended Flow
-			//FlowInheritance: Steps and Listeners from Super-Flow declarations 
+			//FlowInheritance: Steps and Listeners from Super-Flow declarations
 			//should be applied to ExtendedFlows recursively, unless overridden.
 			if (!config.getExtendedFlows().isEmpty())
 			for (ExtendedFlow eFlow : config.getExtendedFlows().get()) {
-				GraphNode node = new GraphNode(eFlow.getNewFunctionName());
-				retList.add(node);
+				DNNode node = new DNNode(eFlow.getNewFunctionName());
+				dnList.put(node.getFunctionName(), node);
 
-				//First step
+				//1. First step
 				if (!eFlow.getNewFirstStep().isEmpty()) {
+					//If the first step is redefined here - use it
 					addCall(node, eFlow.getNewFirstStep().get());
 				} else {
+					//otherwise find the first redefinition in ancestral ExtendedFlows
 					ExtendedFlow current = eFlow;
 					boolean firstStepAssigned = false;
 					while (extendedFlows.containsKey(current.getSuperFlowFunctionName())) {
@@ -243,21 +268,22 @@ Call -> [[functionName]]
 							firstStepAssigned = true;
 							break;
 						}
-						if (!firstStepAssigned) {
-							Flow rootFlow = flows.get(current.getSuperFlowFunctionName());
-							if (!firstStepAssigned)
-								addCall(node, rootFlow.getFirstStep());
-						}
+					}
+					//if no ancestral ExtendedFlow redefines the FirstStep - get the original FirstStep
+					if (!firstStepAssigned) {
+						Flow rootFlow = flows.get(current.getSuperFlowFunctionName());
+						if (!firstStepAssigned)
+							addCall(node, rootFlow.getFirstStep());
 					}
 				}
 
-
-				//Steps
+				//2. Steps
+				//Add all steps registered on extended flow
 				if (!eFlow.getAddSteps().isEmpty())
 					for (StepCall step : eFlow.getAddSteps().get())
 						addCall(node, step);
 
-				//Steps from extended super-flow declarations (recursive)
+				//If not explicitly overridden, add steps from extended super-flow declarations (recursive)
 				if (eFlow.getDropOldSteps().isEmpty() || !eFlow.getDropOldSteps().get()) {
 					ExtendedFlow current = eFlow;
 					boolean drop = false;
@@ -267,15 +293,15 @@ Call -> [[functionName]]
 							for (StepCall step : current.getAddSteps().get())
 								addCall(node, step);
 						
-						//Step inheritance can also be dropped at super-flow stage
+						//Check if the current ancestor overrides steps from its super-flows
 						if (!current.getDropOldSteps().isEmpty() && current.getDropOldSteps().get()) {
 							drop = true;
 							break;
 						}
 					}
 					
+					//If not overridden so far, also add Steps from root Flow declaration
 					if (!drop) {
-						//add Steps from root super-flow declaration
 						Flow rootFlow = flows.get(current.getSuperFlowFunctionName());
 						if (!rootFlow.getSteps().isEmpty())
 							for (StepCall step : rootFlow.getSteps().get())
@@ -283,71 +309,73 @@ Call -> [[functionName]]
 					}
 				}
 				
-				//Add listeners for flow events (FLOW_STARTED, FLOW_FINISHED)
+				//3. Add listeners for flow events (FLOW_STARTED, FLOW_FINISHED)
 				if (!eFlow.getAddListeners().isEmpty())
-					for (ListenerCall listener : eFlow.getAddListeners().get())
-						addListenerCall(node, listener, new Event[] { Event.FLOW_STARTED, Event.FLOW_FINISHED });
+					addListenerCalls(node, eFlow.getAddListeners().get(), 
+							new Event[] { Event.FLOW_STARTED, Event.FLOW_FINISHED });
 
-				//Listeners from super-flow declarations (recursive)
+				//If not explicitly overridden, add Listeners from extended super-flow declarations (recursive)
 				if (eFlow.getDropOldListeners().isEmpty() || !eFlow.getDropOldListeners().get()) {
 					ExtendedFlow current = eFlow;
 					boolean drop = false;
 					while (extendedFlows.containsKey(current.getSuperFlowFunctionName())) {
 						current = extendedFlows.get(current.getSuperFlowFunctionName());
 						if (!current.getAddListeners().isEmpty())
-							for (ListenerCall listener : current.getAddListeners().get())
-								addListenerCall(node, listener, new Event[] { Event.FLOW_STARTED, Event.FLOW_FINISHED });
+							addListenerCalls(node, current.getAddListeners().get(), 
+									new Event[] { Event.FLOW_STARTED, Event.FLOW_FINISHED });
 						
-						//Listener inheritance also can be dropped at super-flow stage
+						//Check if the current ancestor overrides Listeners from its super-flows
 						if (!current.getDropOldListeners().isEmpty() && current.getDropOldListeners().get()) {
 							drop = true;
 							break;
 						}
 					}
+
+					//If not overridden so far, also add Listeners from root Flow declaration
 					if (!drop) {
-						//add Listeners from root super-flow declaration
 						Flow rootFlow = flows.get(current.getSuperFlowFunctionName());
 						if (!rootFlow.getListeners().isEmpty())
-							for (ListenerCall listener : rootFlow.getListeners().get())
-								addListenerCall(node, listener, new Event[] { Event.FLOW_STARTED, Event.FLOW_FINISHED });
+							addListenerCalls(node, rootFlow.getListeners().get(), 
+									new Event[] { Event.FLOW_STARTED, Event.FLOW_FINISHED });
 					}
 				}
 			}
 
 			//Extended Step
-			//Step Inheritance: Execs, Transit, Listeners from super-Step declarations 
+			//Step Inheritance: Execs, Transit, Listeners from super-Step declarations
 			//should be applied to ExtendedSteps recursively, unless overridden
 			if (!config.getExtendedSteps().isEmpty())
 			for (ExtendedStep eStep : config.getExtendedSteps().get()) {
-				GraphNode node = new GraphNode(eStep.getNewFunctionName());
-				retList.add(node);
+				DNNode node = new DNNode(eStep.getNewFunctionName());
+				dnList.put(node.getFunctionName(), node);
 
-				//Add transit
+				//1. Add transit, if overridden
 				if (!eStep.getNewTransit().isEmpty()) {
 					addCall(node, eStep.getNewTransit().get());
 				} else {
+					//Otherwise try to find an override on ancestors ExtendedSteps
 					ExtendedStep current = eStep;
 					boolean transitAssigned = false;
 					while (extendedSteps.containsKey(current.getSuperStepFunctionName())) {
-						//try to add transit from extended super-steps
 						current = extendedSteps.get(current.getSuperStepFunctionName());
 						if (!current.getNewTransit().isEmpty()) {
 							addCall(node, current.getNewTransit().get());
 							transitAssigned = true;
 							break;
 						}
-						//if not defined, add transit from root super-step declaration
-						if (!transitAssigned) {
-							Step rootStep = steps.get(current.getSuperStepFunctionName());
-							addCall(node, rootStep.getTransit());
-						}
+					}
+					//If not overridden, add transit from original root Step
+					if (!transitAssigned) {
+						Step rootStep = steps.get(current.getSuperStepFunctionName());
+						addCall(node, rootStep.getTransit());
 					}
 				}
 				
-				//Add exec
+				//2. Add exec block
 				if (!eStep.getAddExecBlock().isEmpty())
 					addBatchCall(node, eStep.getAddExecBlock().get());
-				
+
+				//If not explicitly overridden, add execs from extended super-step declarations (recursive)
 				if (eStep.getDropOldExecBlock().isEmpty() || !eStep.getDropOldExecBlock().get()) {
 					ExtendedStep current = eStep;
 					boolean drop = false;
@@ -356,53 +384,54 @@ Call -> [[functionName]]
 						if (!current.getAddExecBlock().isEmpty())
 							addBatchCall(node, current.getAddExecBlock().get());
 						
-						//Exec inheritance can also be dropped at super-step stage
+						//Check if the current ancestor overrides execs from its super-Steps
 						if (!current.getDropOldExecBlock().isEmpty() && current.getDropOldExecBlock().get()) {
 							drop = true;
 							break;
 						}
 					}
 					
+					//If not overridden so far, also add Execs from root Step declaration
 					if (!drop) {
-						//add exec from root super-step declaration
 						Step rootStep = steps.get(current.getSuperStepFunctionName());
 						if (!rootStep.getExecBlock().isEmpty())
 							addBatchCall(node, rootStep.getExecBlock().get());
 					}
 				}
 
-				//Add listeners for step events (STEP_STARTED, STEP_FINISHED)
+				//3. Add listeners for step events (STEP_STARTED, STEP_FINISHED)
 				if (!eStep.getAddListeners().isEmpty())
-					for (ListenerCall listener : eStep.getAddListeners().get())
-						addListenerCall(node, listener, new Event[] { Event.STEP_STARTED, Event.STEP_FINISHED });
+					addListenerCalls(node, eStep.getAddListeners().get(), 
+							new Event[] { Event.STEP_STARTED, Event.STEP_FINISHED });
 				
-				//Listeners from super-step declarations (recursive)
+				//If not explicitly overridden, add Listeners from extended super-Step declarations (recursive)
 				if (eStep.getDropOldListeners().isEmpty() || !eStep.getDropOldListeners().get()) {
 					ExtendedStep current = eStep;
 					boolean drop = false;
 					while (extendedSteps.containsKey(current.getSuperStepFunctionName())) {
 						current = extendedSteps.get(current.getSuperStepFunctionName());
 						if (!current.getAddListeners().isEmpty())
-							for (ListenerCall listener : current.getAddListeners().get())
-								addListenerCall(node, listener, new Event[] { Event.STEP_STARTED, Event.STEP_FINISHED });
+							addListenerCalls(node, current.getAddListeners().get(), 
+									new Event[] { Event.STEP_STARTED, Event.STEP_FINISHED });
 						
-						//Listener inheritance also can be dropped at super-step stage
+						//Check if the current ancestor overrides Listeners from its super-Steps
 						if (!current.getDropOldListeners().isEmpty() && current.getDropOldListeners().get()) {
 							drop = true;
 							break;
 						}
 					}
+					
+					//If not overridden so far, also add Listeners from root Step declaration
 					if (!drop) {
-						//add Listeners from root super-step declaration
 						Step rootStep = steps.get(current.getSuperStepFunctionName());
 						if (!rootStep.getListeners().isEmpty())
-							for (ListenerCall listener : rootStep.getListeners().get())
-								addListenerCall(node, listener, new Event[] { Event.STEP_STARTED, Event.STEP_FINISHED });
+							addListenerCalls(node, rootStep.getListeners().get(), 
+									new Event[] { Event.STEP_STARTED, Event.STEP_FINISHED });
 					}
 				}
 			}
 		}
 		
-		return retList;
+		return dnList;
 	}
 }

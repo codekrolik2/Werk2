@@ -1,3 +1,10 @@
+*) Maybe add new events
+STEP_ITERATION_STARTED
+STEP_ITERATION_FINISHED
+and change STEP_STARTED and STEP_FINISHED to be called only before step processing starts and after it's done, 
+	not between iterations. 
+
+
 *) Batch executor
 *) Logical function call - flow -> step -> etc.
 

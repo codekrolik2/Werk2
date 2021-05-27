@@ -175,4 +175,35 @@ public class TestCycleFinder {
 		assertEquals(path.getNodeOrder().pollLast(), "3");
 		assertEquals(path.getNodeOrder().pollLast(), "1");
 	}
+	
+	@Test
+	public void test5() throws WerkConfigException {
+		CycleFinder finder = new CycleFinder();
+		
+		GraphNode v0 = new GraphNode("0");
+		GraphNode v1 = new GraphNode("1");
+		GraphNode v2 = new GraphNode("2");
+		GraphNode v3 = new GraphNode("3");
+		
+		v0.getLinks().add("1");
+		v2.getLinks().add("3");
+		
+		GraphNode[] graph = new GraphNode[] { v0, v1, v2, v3 };
+		
+		assertTrue(finder.findCyclePath(Arrays.asList(graph)).isEmpty());
+	}
+	
+	@Test
+	public void test6() throws WerkConfigException {
+		CycleFinder finder = new CycleFinder();
+		
+		GraphNode v0 = new GraphNode("0");
+		GraphNode v1 = new GraphNode("1");
+		GraphNode v2 = new GraphNode("2");
+		GraphNode v3 = new GraphNode("3");
+		
+		GraphNode[] graph = new GraphNode[] { v0, v1, v2, v3 };
+		
+		assertTrue(finder.findCyclePath(Arrays.asList(graph)).isEmpty());
+	}
 }
