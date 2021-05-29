@@ -175,15 +175,15 @@ Flow3.Transitioner3 --o TS_T3
 Flow3.Transitioner3 --o TF_T3
 Flow3.Transitioner3 ==x TransitFunction1
 
-Engine.Flow1 ==> Engine.Flow1.Step4
-Engine.Flow1.Step4 --o SS_S4
-Engine.Flow1.Step4 --o SF_S4
-Engine.Flow1.Step4 ==> Engine.Flow1.Step4.Executor3
-Engine.Flow1.Step4 ==> Engine.Flow1.Step4.TransitFunction4
-Engine.Flow1.Step4.Executor3 --o ES_E3
-Engine.Flow1.Step4.Executor3 --o EF_E3
-Engine.Flow1.Step4.Executor3 ==x ExecFunction5
-Engine.Flow1.Step4.TransitFunction4 --o TS_S4
-Engine.Flow1.Step4.TransitFunction4 --o TF_S4
-Engine.Flow1.Step4.TransitFunction4 ==x TransitFunction4
+Engine.Flow1 ==> Step4
+Step4 --o SS_S4
+Step4 --o SF_S4
+Step4 ==> Executor3
+Step4 ==> Step4.TransitFunction4
+Executor3 --o ES_E3
+Executor3 --o EF_E3
+Executor3 ==x ExecFunction5
+Step4.TransitFunction4 --o TS_S4
+Step4.TransitFunction4 --o TF_S4
+Step4.TransitFunction4 ==x TransitFunction4
 ```

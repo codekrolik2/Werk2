@@ -19,6 +19,8 @@ Engine : FLOW_STARTED FS_ENG
 Engine : FLOW_FINISHED FF_ENG
 Engine : STEP_STARTED SS_ENG
 Engine : STEP_FINISHED SF_ENG
+Engine : STEP_ITER_STARTED SIS_ENG
+Engine : STEP_ITER_FINISHED SIF_ENG
 Engine : EXECUTOR_STARTED ES_ENG
 Engine : EXECUTOR_FINISHED EF_ENG
 Engine : TRANSITIONER_STARTED TS_ENG
@@ -29,6 +31,8 @@ Flow : FLOW_STARTED FS_FL
 Flow : FLOW_FINISHED FF_FL
 Flow : STEP_STARTED SS_FL
 Flow : STEP_FINISHED SF_FL
+Flow : STEP_ITER_STARTED SIS_FL
+Flow : STEP_ITER_FINISHED SIF_FL
 Flow : EXECUTOR_STARTED ES_FL
 Flow : EXECUTOR_FINISHED EF_FL
 Flow : TRANSITIONER_STARTED TS_FL
@@ -37,6 +41,8 @@ Flow : TRANSITIONER_FINISHED TF_FL
 class Step
 Step : STEP_STARTED SS_ST
 Step : STEP_FINISHED SF_ST
+Step : STEP_ITER_STARTED SIS_ST
+Step : STEP_ITER_FINISHED SIF_ST
 Step : EXECUTOR_STARTED ES_ST
 Step : EXECUTOR_FINISHED EF_ST
 Step : TRANSITIONER_STARTED TS_ST
@@ -47,6 +53,8 @@ classDiagram
 class Step2
 Step2 : STEP_STARTED SS_ST2
 Step2 : STEP_FINISHED SF_ST2
+Step2 : STEP_ITER_STARTED SIS_ST2
+Step2 : STEP_ITER_FINISHED SIF_ST2
 class Transitioner
 Transitioner : TRANSITIONER_STARTED TS_TR
 Transitioner : TRANSITIONER_FINISHED TF_TR
@@ -81,55 +89,59 @@ Flow FLOW_FINISHED { FF_ENG, FF_FL }
 1.2) Step
 ```
 Anonymous FLOW_STARTED { FS_ENG }
-  Step STEP_STARTED { SS_ENG, SS_ST }
+  Step STEP_STARTED { SS_ENG, SIS_ENG, SS_ST, SIS_ST }
     ... [can either point to itself or to a final state]
-  Step STEP_FINISHED { SF_ENG, SF_ST }
+  Step STEP_FINISHED { SF_ENG, SIF_ENG, SF_ST, SIF_ST }
 Anonymous FLOW_FINISHED { FF_ENG }
 ```
 1.3) Transit
 ```
 Anonymous FLOW_STARTED { FS_ENG }
-  Anonymous STEP_STARTED { SS_ENG }
+  Anonymous STEP_STARTED { SS_ENG, SIS_ENG }
     Transitioner TRANSITIONER_STARTED { TS_ENG, TS_TR }
       ... [can either point to itself or to a final state]
     Transitioner TRANSITIONER_FINISHED { TF_ENG, TF_TR }
-  Anonymous STEP_FINISHED { SF_ENG }
+  Anonymous STEP_FINISHED { SF_ENG, SIF_ENG }
 Anonymous FLOW_FINISHED { FF_ENG }
 ```
 1.4) Exec
 ```
 Anonymous FLOW_STARTED { FS_ENG }
-  Anonymous STEP_STARTED { SS_ENG }
+  Anonymous STEP_STARTED { SS_ENG, SIS_ENG }
     Executor EXECUTOR_STARTED { ES_ENG, ES_EX }
       ...
     Executor EXECUTOR_FINISHED { EF_ENG, EF_EX }
     Anonymous TRANSITIONER_STARTED { TS_ENG }
       exit(0)
     Anonymous TRANSITIONER_FINISHED { TF_ENG }
-  Anonymous STEP_FINISHED { SF_ENG }
+  Anonymous STEP_FINISHED { SF_ENG, SIF_ENG }
 Anonymous FLOW_FINISHED { FF_ENG }
 ```
 1.5) Exec RawFunction
 ```
 Anonymous FLOW_STARTED { FS_ENG }
-  Anonymous STEP_STARTED { SS_ENG }
+  Anonymous STEP_STARTED { SS_ENG, SIS_ENG }
     Anonymous EXECUTOR_STARTED { ES_ENG }
+      --- new context ---
       ExecFunction()
+      -------------------
     Anonymous EXECUTOR_FINISHED { EF_ENG }
     Anonymous TRANSITIONER_STARTED { TS_ENG }
       exit(0)
     Anonymous TRANSITIONER_FINISHED { TF_ENG }
-  Anonymous STEP_FINISHED { SF_ENG }
+  Anonymous STEP_FINISHED { SF_ENG, SIF_ENG }
 Anonymous FLOW_FINISHED { FF_ENG }
 ```
 1.6) Transit RawFunction
 ```
 Anonymous FLOW_STARTED { FS_ENG }
-  Anonymous STEP_STARTED { SS_ENG }
+  Anonymous STEP_STARTED { SS_ENG, SIS_ENG }
     Transitioner TRANSITIONER_STARTED { TS_ENG }
+      --- new context ---
       TransitFunction() [can either point to itself or to a final state]
+      -------------------
     Transitioner TRANSITIONER_FINISHED { TF_ENG }
-  Anonymous STEP_FINISHED { SF_ENG }
+  Anonymous STEP_FINISHED { SF_ENG, SIF_ENG }
 Anonymous FLOW_FINISHED { FF_ENG }
 ```
 
@@ -140,29 +152,31 @@ Flow can use functions of type Step, Transit and transit RawFunctions as Steps.
 1.1) Step
 ```
 Flow FLOW_STARTED { FS_FL }
-  Step STEP_STARTED { SS_FL, SS_ST }
+  Step STEP_STARTED { SS_FL, SIS_FL, SS_ST, SIS_ST }
     ...
-  Step STEP_FINISHED { SF_FL, SF_ST }
+  Step STEP_FINISHED { SF_FL, SIF_FL, SF_ST, SIF_ST }
 Flow FLOW_FINISHED { FF_FL }
 ```
 1.2) Transit
 ```
 Flow FLOW_STARTED { FS_FL }
-  Anonymous STEP_STARTED { SS_FL }
+  Anonymous STEP_STARTED { SS_FL, SIS_FL }
     Transitioner TRANSITIONER_STARTED { TS_FL, TS_TR }
       ...
     Transitioner TRANSITIONER_FINISHED { TF_FL, TF_TR }
-  Anonymous STEP_FINISHED { SF_FL }
+  Anonymous STEP_FINISHED { SF_FL, SIF_FL }
 Flow FLOW_FINISHED { FF_FL }
 ```
 1.3) Transit RawFunction
 ```
 Flow FLOW_STARTED { FS_FL }
-  Anonymous STEP_STARTED { SS_FL }
+  Anonymous STEP_STARTED { SS_FL, SIS_FL }
     Anonymous TRANSITIONER_STARTED { TS_FL }
+      --- new context ---
       TransitFunction()
+      -------------------
     Anonymous TRANSITIONER_FINISHED { TF_FL }
-  Anonymous STEP_FINISHED { SF_FL }
+  Anonymous STEP_FINISHED { SF_FL, SIF_FL }
 Flow FLOW_FINISHED { FF_FL }
 ```
 
@@ -171,7 +185,7 @@ Flow can use functions of all types Flow, Step, Exec, Transit, exec and transit 
 
 1.1) Flow
 ```
-Step STEP_STARTED { SS_ST }
+Step STEP_STARTED { SS_ST, SIS_ST }
   Anonymous EXECUTOR_STARTED { ES_ST }
     --- new context ---
     Flow FLOW_STARTED { FS_FL }
@@ -180,11 +194,11 @@ Step STEP_STARTED { SS_ST }
     -------------------
   Anonymous EXECUTOR_FINISHED { EF_ST }
   ... [other executors and transitioner defined in Step]
-Step STEP_FINISHED { SF_ST }
+Step STEP_FINISHED { SF_ST, SIF_ST }
 ```
 1.2) Step
 ```
-Step STEP_STARTED { SS_ST }
+Step STEP_STARTED { SS_ST, SIS_ST }
   Anonymous EXECUTOR_STARTED { ES_ST }
     --- new context ---
     Step2 STEP_STARTED { SS_ST2 }
@@ -193,20 +207,20 @@ Step STEP_STARTED { SS_ST }
     -------------------
   Anonymous EXECUTOR_FINISHED { EF_ST }
   ... [other executors and transitioner defined in Step]
-Step STEP_FINISHED { SF_ST }
+Step STEP_FINISHED { SF_ST, SIF_ST }
 ```
 1.3) Exec
 ```
-Step STEP_STARTED { SS_ST }
+Step STEP_STARTED { SS_ST, SIS_ST }
   Executor EXECUTOR_STARTED { ES_ST, ES_EX }
     ...
   Executor EXECUTOR_FINISHED { EF_ST, EF_EX }
   ... [other executors and transitioner defined in Step]
-Step STEP_FINISHED { SF_ST }
+Step STEP_FINISHED { SF_ST, SIF_ST }
 ```
 1.4) Transit
 ```
-Step STEP_STARTED { SS_ST }
+Step STEP_STARTED { SS_ST, SIS_ST }
   Anonymous EXECUTOR_STARTED { ES_ST }
     --- new context ---
     Transitioner TRANSITIONER_STARTED { TS_TR }
@@ -215,27 +229,29 @@ Step STEP_STARTED { SS_ST }
     -------------------
   Anonymous EXECUTOR_FINISHED { EF_ST }
   ... [other executors and transitioner defined in Step]
-Step STEP_FINISHED { SF_ST }
+Step STEP_FINISHED { SF_ST, SIF_ST }
 ```
 1.5) Exec RawFunction
 ```
-Step STEP_STARTED { SS_ST }
+Step STEP_STARTED { SS_ST, SIS_ST }
   Anonymous EXECUTOR_STARTED { ES_ST }
+    --- new context ---
     ExecFunction()
+    -------------------
   Anonymous EXECUTOR_FINISHED { EF_ST }
   ... [other executors and transitioner defined in Step]
-Step STEP_FINISHED { SF_ST }
+Step STEP_FINISHED { SF_ST, SIF_ST }
 ```
 1.6) Transit RawFunction
 ```
-Step STEP_STARTED { SS_ST }
+Step STEP_STARTED { SS_ST, SIS_ST }
   Anonymous EXECUTOR_STARTED { ES_ST }
     --- new context ---
     TransitFunction() [can either point to itself or to a final state]
     -------------------
   Anonymous EXECUTOR_FINISHED { EF_ST }
     ... [other executors and transitioner defined in Step]
-Step STEP_FINISHED { SF_ST }
+Step STEP_FINISHED { SF_ST, SIF_ST }
 ```
 
 ## 4. Call indirection Step -> {Transit}
@@ -243,36 +259,38 @@ Step can use a function of type Step, Transit or transit RawFunctions as its Tra
 
 1.1) Step
 ```
-Step STEP_STARTED { SS_ST }
+Step STEP_STARTED { SS_ST, SIS_ST }
   ... [executors defined in Step]
   Anonymous TRANSITIONER_STARTED { TS_ST }
     --- new context ---
-    Step2 STEP_STARTED { SS_ST2 }
+    Step2 STEP_STARTED { SS_ST2, SIS_ST2 }
       ... [can point to any step in the flow]
-    Step2 STEP_FINISHED { SF_ST2 }
+    Step2 STEP_FINISHED { SF_ST2, SIF_ST2 }
     -------------------
   Anonymous TRANSITIONER_FINISHED { TF_ST }
-Step STEP_FINISHED { SF_ST }
+Step STEP_FINISHED { SF_ST, SIF_ST }
 ```
 
 1.2) Transit
 ```
-Step STEP_STARTED { SS_ST }
+Step STEP_STARTED { SS_ST, SIS_ST }
   ... [executors defined in Step]
   Transitioner TRANSITIONER_STARTED { TS_ST, TS_TR }
     ...
   Transitioner TRANSITIONER_FINISHED { TF_ST, TF_TR }
-Step STEP_FINISHED { SF_ST }
+Step STEP_FINISHED { SF_ST, SIF_ST }
 ```
 
 1.3) Transit RawFunction
 ```
-Step STEP_STARTED { SS_ST }
+Step STEP_STARTED { SS_ST, SIS_ST }
   ... [executors defined in Step]
   Anonymous TRANSITIONER_STARTED { TS_ST }
+    --- new context ---
     TransitFunction()
+    -------------------
   Anonymous TRANSITIONER_FINISHED { TF_ST }
-Step STEP_FINISHED { SF_ST }
+Step STEP_FINISHED { SF_ST, SIF_ST }
 ```
 
 ## 5. Call indirection Exec -> {Exec Function}
@@ -292,9 +310,9 @@ Executor EXECUTOR_FINISHED { EF_EX }
 ```
 Executor EXECUTOR_STARTED { ES_EX }
   --- new context ---
-  Step STEP_STARTED { SS_ST }
+  Step STEP_STARTED { SS_ST, SIS_ST }
     ... [can either point to itself or to a final state]
-  Step STEP_FINISHED { SF_ST }
+  Step STEP_FINISHED { SF_ST, SIF_ST }
   -------------------
 Executor EXECUTOR_FINISHED { EF_EX }
 ```
@@ -321,7 +339,9 @@ Executor EXECUTOR_FINISHED { EF_EX }
 1.5) Exec RawFunction
 ```
 Executor EXECUTOR_STARTED { ES_EX }
+  --- new context ---
   ExecFunction()
+  -------------------
 Executor EXECUTOR_FINISHED { EF_EX }
 ```
 1.6) Transit RawFunction
@@ -340,9 +360,9 @@ Transit can use a function of type Step, Transit, transit RawFunction as its und
 ```
 Transitioner TRANSITIONER_STARTED { TS_TR }
   --- new context ---
-  Step2 STEP_STARTED { SS_ST2 }
+  Step2 STEP_STARTED { SS_ST2, SIS_ST2 }
     ... [can point to any step in the flow]
-  Step2 STEP_FINISHED { SF_ST2 }
+  Step2 STEP_FINISHED { SF_ST2, SIF_ST2 }
   -------------------
 Transitioner TRANSITIONER_FINISHED { TF_TR }
 ```
@@ -361,6 +381,8 @@ Transitioner TRANSITIONER_FINISHED { TF_TR }
 1.3) Transit RawFunction
 ```
 Transitioner TRANSITIONER_STARTED { TS_TR }
+  --- new context ---
   TransitFunction()
+  -------------------
 Transitioner TRANSITIONER_FINISHED { TF_TR }
 ```

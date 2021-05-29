@@ -9,20 +9,32 @@ import java.util.Stack;
 import org.werk2.config.entities.Event;
 import org.werk2.config.entities.ListenerCall;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class ParsingContext {
 	protected Stack<List<? extends ListenerCall>> projectedListeners = new Stack<>();
 	protected Stack<String> ancestorNames = new Stack<>();
 	
-	public String flowNamePrefix() {
+	public String getNamePrefix() {
 		StringBuilder flowNameBuilder = new StringBuilder();
 		for (String ancestor : getAncestorNames()) {
 			flowNameBuilder.append(ancestor);
-			flowNameBuilder.append("->");
+			flowNameBuilder.append(":");
 		}
 		return flowNameBuilder.toString();
+	}
+	
+	public static List<ListenerCall> filterListeners(Event[] events, List<? extends ListenerCall> listeners) {
+		Set<Event> eventSet = new HashSet<>();
+		for (Event event : events)
+			eventSet.add(event);
+		
+		return filterListeners(eventSet, listeners);
 	}
 	
 	public static List<ListenerCall> filterListeners(Set<Event> eventSet, List<? extends ListenerCall> listeners) {

@@ -4,6 +4,12 @@ STEP_ITERATION_FINISHED
 and change STEP_STARTED and STEP_FINISHED to be called only before step processing starts and after it's done, 
 	not between iterations. 
 
+*) Draw entity graph in mermaid
+	Flow-specific
+	
+*) Draw call graph in mermaid
+	Flows only
+	Flow-specific
 
 *) Batch executor
 *) Logical function call - flow -> step -> etc.

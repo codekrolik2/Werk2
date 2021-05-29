@@ -225,7 +225,8 @@ public class GraphBuilder {
 
 				if (!step.getListeners().isEmpty())
 					addListenerCalls(node, step.getListeners().get(), 
-							new Event[] { Event.STEP_STARTED, Event.STEP_FINISHED });
+							new Event[] { Event.STEP_STARTED, Event.STEP_FINISHED, 
+									Event.STEP_ITER_STARTED, Event.STEP_ITER_FINISHED });
 			}
 
 			//Flows
@@ -402,7 +403,7 @@ public class GraphBuilder {
 				//3. Add listeners for step events (STEP_STARTED, STEP_FINISHED)
 				if (!eStep.getAddListeners().isEmpty())
 					addListenerCalls(node, eStep.getAddListeners().get(), 
-							new Event[] { Event.STEP_STARTED, Event.STEP_FINISHED });
+							new Event[] { Event.STEP_STARTED, Event.STEP_FINISHED, Event.STEP_ITER_STARTED, Event.STEP_ITER_FINISHED });
 				
 				//If not explicitly overridden, add Listeners from extended super-Step declarations (recursive)
 				if (eStep.getDropOldListeners().isEmpty() || !eStep.getDropOldListeners().get()) {
@@ -412,7 +413,8 @@ public class GraphBuilder {
 						current = extendedSteps.get(current.getSuperStepFunctionName());
 						if (!current.getAddListeners().isEmpty())
 							addListenerCalls(node, current.getAddListeners().get(), 
-									new Event[] { Event.STEP_STARTED, Event.STEP_FINISHED });
+									new Event[] { Event.STEP_STARTED, Event.STEP_FINISHED, 
+											Event.STEP_ITER_STARTED, Event.STEP_ITER_FINISHED });
 						
 						//Check if the current ancestor overrides Listeners from its super-Steps
 						if (!current.getDropOldListeners().isEmpty() && current.getDropOldListeners().get()) {
@@ -426,7 +428,8 @@ public class GraphBuilder {
 						Step rootStep = steps.get(current.getSuperStepFunctionName());
 						if (!rootStep.getListeners().isEmpty())
 							addListenerCalls(node, rootStep.getListeners().get(), 
-									new Event[] { Event.STEP_STARTED, Event.STEP_FINISHED });
+									new Event[] { Event.STEP_STARTED, Event.STEP_FINISHED, 
+											Event.STEP_ITER_STARTED, Event.STEP_ITER_FINISHED });
 					}
 				}
 			}

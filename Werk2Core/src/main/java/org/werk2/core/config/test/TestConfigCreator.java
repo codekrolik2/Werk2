@@ -46,7 +46,7 @@ public class TestConfigCreator {
 				Optional.empty(), Optional.empty());
 	}
 	
-	public ListenerCall listenerCall(String functionName, Event event) {
+	public ListenerCall listenerCall(String functionName, Event event, List<Function> rawFunctions) {
 		Optional<List<Call>> calls = Optional.empty();
 		Optional<List<BatchCall>> batches = Optional.empty();
 		
@@ -54,6 +54,8 @@ public class TestConfigCreator {
 			calls = Optional.of(Arrays.asList(new Call[] { call(functionName) }));
 		else
 			batches = Optional.of(Arrays.asList(new BatchCall[] { batchCall(new String[] { functionName }) }));
+		
+		rawFunctions.add(function(functionName));
 		
 		return new ProgListenerCall(Optional.empty(), 
 			calls, batches, Optional.empty(), 
@@ -67,34 +69,36 @@ public class TestConfigCreator {
 				Arrays.asList(new FunctionSignature[] { signature }));
 	}
 	
-	public Exec exec(int number, String calledFunction, boolean overrideListeners) {
+	public Exec exec(int number, String calledFunction, boolean overrideListeners, List<Function> rawFunctions) {
 		List<ListenerCall> execListeners = Arrays.asList(new ListenerCall[] {
-				listenerCall("ES_E" + number, Event.EXECUTOR_STARTED),
-				listenerCall("EF_E" + number, Event.EXECUTOR_FINISHED)
+				listenerCall("ES_E" + number, Event.EXECUTOR_STARTED, rawFunctions),
+				listenerCall("EF_E" + number, Event.EXECUTOR_FINISHED, rawFunctions)
 			});
 		
 		return new ProgExec(Optional.empty(), "Executor" + number, calledFunction, 
 				Optional.of(execListeners), Optional.of(overrideListeners));
 	}
 	
-	public Transit transit(int number, String calledFunction, boolean overrideListeners) {
+	public Transit transit(int number, String calledFunction, boolean overrideListeners, List<Function> rawFunctions) {
 		List<ListenerCall> transitListeners = Arrays.asList(new ListenerCall[] {
-				listenerCall("TS_T" + number, Event.EXECUTOR_STARTED),
-				listenerCall("TF_T" + number, Event.EXECUTOR_FINISHED)
+				listenerCall("TS_T" + number, Event.TRANSITIONER_STARTED, rawFunctions),
+				listenerCall("TF_T" + number, Event.TRANSITIONER_FINISHED, rawFunctions)
 			});
 		
 		return new ProgTransit(Optional.empty(), "Transitioner" + number, calledFunction, 
 				Optional.of(transitListeners), Optional.of(overrideListeners));
 	}
 
-	public Step step(int number, String[] execs, String transit, boolean overrideListeners) {
+	public Step step(int number, String[] execs, String transit, boolean overrideListeners, List<Function> rawFunctions) {
 		List<ListenerCall> stepListeners = Arrays.asList(new ListenerCall[] {
-				listenerCall("SS_S" + number, Event.STEP_STARTED),
-				listenerCall("SF_S" + number, Event.STEP_FINISHED),
-				listenerCall("ES_S" + number, Event.EXECUTOR_STARTED),
-				listenerCall("EF_S" + number, Event.EXECUTOR_FINISHED),
-				listenerCall("TS_S" + number, Event.TRANSITIONER_STARTED),
-				listenerCall("TF_S" + number, Event.TRANSITIONER_FINISHED)
+				listenerCall("SS_S" + number, Event.STEP_STARTED, rawFunctions),
+				listenerCall("SF_S" + number, Event.STEP_FINISHED, rawFunctions),
+				listenerCall("SIS_S" + number, Event.STEP_ITER_STARTED, rawFunctions),
+				listenerCall("SIF_S" + number, Event.STEP_ITER_FINISHED, rawFunctions),
+				listenerCall("ES_S" + number, Event.EXECUTOR_STARTED, rawFunctions),
+				listenerCall("EF_S" + number, Event.EXECUTOR_FINISHED, rawFunctions),
+				listenerCall("TS_S" + number, Event.TRANSITIONER_STARTED, rawFunctions),
+				listenerCall("TF_S" + number, Event.TRANSITIONER_FINISHED, rawFunctions)
 			});
 		
 		Optional<BatchCall> execBlock = Optional.empty();
@@ -120,25 +124,29 @@ public class TestConfigCreator {
 						stepAlias == null ? Optional.empty() : Optional.of(stepAlias));
 	}
 	
-	public Flow flow(int number, String firstStep) {
-		return flow(number, firstStep, null);
+	public Flow flow(int number, String firstStep, List<Function> rawFunctions) {
+		return flow(number, firstStep, null, rawFunctions);
 	}
 	
-	public Flow flow(int number, String firstStep, String[] steps) {
-		return flow(number, firstStep, steps, false);
+	public Flow flow(int number, String firstStep, String[] steps, List<Function> rawFunctions) {
+		return flow(number, firstStep, steps, false, rawFunctions);
 	}
 	
-	public Flow flow(int number, String firstStep, String[] steps, boolean overrideListeners) {
-		List<ListenerCall> flowListeners = Arrays.asList(new ListenerCall[] {
-				listenerCall("FS_F" + number, Event.FLOW_STARTED),
-				listenerCall("FF_F" + number, Event.FLOW_FINISHED),
-				listenerCall("SS_F" + number, Event.STEP_STARTED),
-				listenerCall("SF_F" + number, Event.STEP_FINISHED),
-				listenerCall("ES_F" + number, Event.EXECUTOR_STARTED),
-				listenerCall("EF_F" + number, Event.EXECUTOR_FINISHED),
-				listenerCall("TS_F" + number, Event.TRANSITIONER_STARTED),
-				listenerCall("TF_F" + number, Event.TRANSITIONER_FINISHED)
-			});
+	public Flow flow(int number, String firstStep, String[] steps, boolean overrideListeners, List<Function> rawFunctions) {
+		List<ListenerCall> flowListeners = new ArrayList<>();
+		flowListeners.addAll(
+			Arrays.asList(new ListenerCall[] {
+			listenerCall("FS_F" + number, Event.FLOW_STARTED, rawFunctions),
+			listenerCall("FF_F" + number, Event.FLOW_FINISHED, rawFunctions),
+			listenerCall("SS_F" + number, Event.STEP_STARTED, rawFunctions),
+			listenerCall("SF_F" + number, Event.STEP_FINISHED, rawFunctions),
+			listenerCall("SIS_F" + number, Event.STEP_ITER_STARTED, rawFunctions),
+			listenerCall("SIF_F" + number, Event.STEP_ITER_FINISHED, rawFunctions),
+			listenerCall("ES_F" + number, Event.EXECUTOR_STARTED, rawFunctions),
+			listenerCall("EF_F" + number, Event.EXECUTOR_FINISHED, rawFunctions),
+			listenerCall("TS_F" + number, Event.TRANSITIONER_STARTED, rawFunctions),
+			listenerCall("TF_F" + number, Event.TRANSITIONER_FINISHED, rawFunctions)
+		}));
 
 		List<StepCall> stepList = new ArrayList<>();
 		if (steps != null)
@@ -169,55 +177,62 @@ public class TestConfigCreator {
 			Optional.empty());
 	}
 
-	public Engine engine() {
+	public Engine engine(List<Function> rawFunctions) {
 		List<ListenerCall> engineListeners = Arrays.asList(new ListenerCall[] {
-				listenerCall("FS_E", Event.FLOW_STARTED),
-				listenerCall("FF_E", Event.FLOW_FINISHED),
-				listenerCall("SS_E", Event.STEP_STARTED),
-				listenerCall("SF_E", Event.STEP_FINISHED),
-				listenerCall("ES_E", Event.EXECUTOR_STARTED),
-				listenerCall("EF_E", Event.EXECUTOR_FINISHED),
-				listenerCall("TS_E", Event.TRANSITIONER_STARTED),
-				listenerCall("TF_E", Event.TRANSITIONER_FINISHED)
+				listenerCall("FS_E", Event.FLOW_STARTED, rawFunctions),
+				listenerCall("FF_E", Event.FLOW_FINISHED, rawFunctions),
+				listenerCall("SS_E", Event.STEP_STARTED, rawFunctions),
+				listenerCall("SF_E", Event.STEP_FINISHED, rawFunctions),
+				listenerCall("SIS_E", Event.STEP_ITER_STARTED, rawFunctions),
+				listenerCall("SIF_E", Event.STEP_ITER_FINISHED, rawFunctions),
+				listenerCall("ES_E", Event.EXECUTOR_STARTED, rawFunctions),
+				listenerCall("EF_E", Event.EXECUTOR_FINISHED, rawFunctions),
+				listenerCall("TS_E", Event.TRANSITIONER_STARTED, rawFunctions),
+				listenerCall("TF_E", Event.TRANSITIONER_FINISHED, rawFunctions)
 			});
 			
 		return new ProgEngine(Optional.empty(), Optional.empty(), Optional.of(engineListeners));
 	}
 	
+	@SuppressWarnings("unchecked")
 	public Werk2Config buildConfig() {
-	    List<Function> rawFunctions = Arrays.asList(new Function[] {
+	    List<Function> rawFunctions = new ArrayList<>();
+	    rawFunctions.addAll(Arrays.asList(new Function[] {
     		function("TransitFunction1"),
     		function("ExecFunction2"),
     		function("ExecFunction3"),
     		function("TransitFunction4"),
     		function("ExecFunction5")
-	    });
+	    }));
 	    
 	    List<Exec> execs = Arrays.asList(new Exec[] {
-    		exec(1, "Flow2", false),
-    		exec(2, "ExecFunction3", false),
-    		exec(3, "ExecFunction5", true)
+    		exec(1, "Flow2", false, rawFunctions),
+    		exec(2, "ExecFunction3", false, rawFunctions),
+    		exec(3, "ExecFunction5", true, rawFunctions)
 	    });
 	    
 	    List<Transit> transits = Arrays.asList(new Transit[] {
-    		transit(1, "Step2", false),
-    		transit(2, "TransitFunction4", false),
-    		transit(3, "TransitFunction1", false)
+    		transit(1, "Step2", false, rawFunctions),
+    		transit(2, "TransitFunction4", false, rawFunctions),
+    		transit(3, "TransitFunction1", false, rawFunctions)
 	    });
 	    
 	    List<Step> steps = Arrays.asList(new Step[] {
-    		step(1, new String[] { "Executor1" }, "Transitioner1", false),
-    		step(2, new String[] { "Executor2" }, "Transitioner2", false),
-    		step(4, new String[] { "Executor3" }, "TransitFunction4", true)
+    		step(1, new String[] { "Executor1" }, "Transitioner1", false, rawFunctions),
+    		step(2, new String[] { "Executor2" }, "Transitioner2", false, rawFunctions),
+    		step(4, new String[] { "Executor3" }, "TransitFunction4", true, rawFunctions)
 	    });
 	    
+	    Flow flow2 = flow(2, "Step2", rawFunctions);
+	    ((List<ListenerCall>)flow2.getListeners().get()).add(FF_F2_1());
+	    
 	    List<Flow> flows = Arrays.asList(new Flow[] {
-	    	flow(1, "Step1", new String[] { "Step4" } ),
-	    	flow(2, "Step2"),
-	    	flow(3, "Step2", new String[] { "Transitioner3" } )
+	    	flow(1, "Step1", new String[] { "Step4" }, rawFunctions ),
+	    	flow2,
+	    	flow(3, "Step2", new String[] { "Transitioner3", "TransitFunction4" }, rawFunctions )
 	    });
 
-		Engine engine = engine();
+		Engine engine = engine(rawFunctions);
 
 	    //TODO: add ExtendedSteps and ExtendedFlows
 	    //	Perhaps in a separate test, to keep the test matching the structure defined in docs for reference
