@@ -15,12 +15,13 @@ import lombok.NonNull;
 
 @Getter
 public class ProgExtendedFlow extends ProgDocumented implements ExtendedFlow {
-	public ProgExtendedFlow(Optional<? extends Doc> doc, String superFlowFunctionName, String newFunctionName,
+	public ProgExtendedFlow(Optional<? extends Doc> doc, Optional<? extends Doc> functionDoc, String superFlowFunctionName, String newFunctionName,
 			Optional<? extends List<? extends FunctionSignature>> addSignatures, Optional<Boolean> dropOldSignatures,
 			Optional<? extends StepCall> newFirstStep, Optional<? extends List<? extends StepCall>> addSteps,
 			Optional<Boolean> dropOldSteps, Optional<? extends List<? extends ListenerCall>> addListeners,
 			Optional<Boolean> dropOldListeners, Optional<Boolean> newOverrideListeners) {
 		super(doc);
+		this.functionDoc = functionDoc;
 		this.superFlowFunctionName = superFlowFunctionName;
 		this.newFunctionName = newFunctionName;
 		this.addSignatures = addSignatures;
@@ -33,6 +34,7 @@ public class ProgExtendedFlow extends ProgDocumented implements ExtendedFlow {
 		this.newOverrideListeners = newOverrideListeners;
 	}
 	
+	@NonNull protected Optional<? extends Doc> functionDoc;
 	@NonNull protected String superFlowFunctionName;
 	@NonNull protected String newFunctionName;
 	@NonNull protected Optional<? extends List<? extends FunctionSignature>> addSignatures;

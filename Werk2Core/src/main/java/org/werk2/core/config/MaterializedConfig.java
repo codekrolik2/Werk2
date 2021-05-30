@@ -154,8 +154,9 @@ public class MaterializedConfig {
 		try {
 			//load invocation structures. Keep track of return type (to identify functions that can be transits).
 			for (Werk2Config config : configs) {
-				if (!config.getRawFunctions().isEmpty()) {
-					for (Function func : config.getRawFunctions().get()) {
+				//TODO: RawExecFunctions and RawTransitFunctions
+				if (!config.getRawExecFunctions().isEmpty()) {
+					for (Function func : config.getRawExecFunctions().get()) {
 						//Raw function must have physical name
 						if (func.getPhysicalName().isEmpty())
 							throw new WerkConfigException(
@@ -420,8 +421,13 @@ public class MaterializedConfig {
 				for (Step step : config.getSteps().get())
 					uniqueSignaturesChecker.checkFunctionSignatures(step.getFunction());
 			
-			if (!config.getRawFunctions().isEmpty())
-				for (Function rawFunction : config.getRawFunctions().get())
+			if (!config.getRawExecFunctions().isEmpty())
+				for (Function rawFunction : config.getRawExecFunctions().get())
+					uniqueSignaturesChecker.checkFunctionSignatures(rawFunction);
+
+			//TODO: Ensure transit function only can return TransitResult
+			if (!config.getRawTransitFunctions().isEmpty())
+				for (Function rawFunction : config.getRawTransitFunctions().get())
 					uniqueSignaturesChecker.checkFunctionSignatures(rawFunction);
 		}
 	}

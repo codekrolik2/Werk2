@@ -44,7 +44,9 @@ public class XmlWerk2Config extends XmlDocumented implements Werk2Config {
 	@XmlElement(required = false)
     public List<XmlTransit> transit;
 	@XmlElement(required = false)
-    public List<XmlFunction> rawFunction;
+    public List<XmlFunction> rawExecFunction;
+	@XmlElement(required = false)
+    public List<XmlFunction> rawTransitFunction;
 
 	@Override
 	public Optional<Engine> getEngine() {
@@ -82,7 +84,12 @@ public class XmlWerk2Config extends XmlDocumented implements Werk2Config {
 	}
 
 	@Override
-	public Optional<List<? extends Function>> getRawFunctions() {
-		return rawFunction == null ? Optional.empty() : Optional.of(rawFunction);
+	public Optional<? extends List<? extends Function>> getRawExecFunctions() {
+		return rawExecFunction == null ? Optional.empty() : Optional.of(rawExecFunction);
+	}
+
+	@Override
+	public Optional<? extends List<? extends Function>> getRawTransitFunctions() {
+		return rawTransitFunction == null ? Optional.empty() : Optional.of(rawTransitFunction);
 	}
 }

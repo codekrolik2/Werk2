@@ -3,6 +3,7 @@ package org.werk2.config.entities;
 import java.util.List;
 import java.util.Optional;
 
+import org.werk2.config.Doc;
 import org.werk2.config.Documented;
 import org.werk2.config.calls.BatchCall;
 import org.werk2.config.calls.Call;
@@ -14,6 +15,10 @@ import org.werk2.config.functions.FunctionSignature;
  *
  */
 public interface ExtendedStep extends Documented {
+	/**
+	 * @return Function Documentation
+	 */
+	Optional<? extends Doc> getFunctionDoc();
 	/**
 	 * @return Name of a SuperStep
 	 */

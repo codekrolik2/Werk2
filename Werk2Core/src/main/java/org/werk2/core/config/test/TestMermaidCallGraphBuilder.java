@@ -12,8 +12,10 @@ public class TestMermaidCallGraphBuilder {
 		
 		MermaidCallGraphBuilder graphBuilder = new MermaidCallGraphBuilder(Arrays.asList(new Werk2Config[] {config}));
 		System.out.println("----------------------------------------------------------------");
-		//System.out.println(graphBuilder.buildAllFlows());
-		System.out.println(graphBuilder.buildFlow("Flow1"));
+		//System.out.println(graphBuilder.buildEverything());
+		System.out.println(graphBuilder.buildAllFlows());
+		//System.out.println(graphBuilder.buildFlow("Flow1"));
+		//System.out.println(graphBuilder.buildFunction("Executor3"));
 		System.out.println("----------------------------------------------------------------");
 	}
 }

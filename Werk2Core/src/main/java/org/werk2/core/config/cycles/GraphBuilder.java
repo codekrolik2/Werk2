@@ -180,8 +180,14 @@ public class GraphBuilder {
 		
 		for (Werk2Config config : configs) {
 			//Raw Functions
-			if (!config.getRawFunctions().isEmpty())
-			for (Function rawFunction : config.getRawFunctions().get()) {
+			if (!config.getRawExecFunctions().isEmpty())
+			for (Function rawFunction : config.getRawExecFunctions().get()) {
+				DNNode node = new DNNode(rawFunction.getFunctionName());
+				dnList.put(node.getFunctionName(), node);
+			}
+
+			if (!config.getRawTransitFunctions().isEmpty())
+			for (Function rawFunction : config.getRawTransitFunctions().get()) {
 				DNNode node = new DNNode(rawFunction.getFunctionName());
 				dnList.put(node.getFunctionName(), node);
 			}

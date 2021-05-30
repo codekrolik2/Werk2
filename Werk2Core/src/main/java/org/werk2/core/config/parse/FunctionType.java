@@ -5,7 +5,8 @@ public enum FunctionType {
 	STEP,
 	TRANSIT,
 	EXEC,
-	RAW_FUNCTION;
+	RAW_EXEC_FUNCTION,
+	RAW_TRANSIT_FUNCTION;
 
     public String value() {
         return name();

@@ -52,6 +52,7 @@ Engine.flowStart -.-> FLOW_STARTED:flowStart
 FLOW_STARTED:flowStart -.-> FLOW_STARTED:flowStart
 ```
 Since we're obligated to test all possible call indirections to be acyclic, modeling the invocation of all existing functions as Flows would definitely be a part of our check. The example above shows calling of raw function `flowStart` as a standalone Flow. Thus, inheriting Engine context in new projection contexts (like Listener Call) could potentially create call indirection loop situations when no simple remediation by restructuring is possible.
+P.S. also, due to "everything is a Flow" semantics, if we indirect it to, say, Exec - in case engine's listeners are projected, not just Exec bindings will trigger. In fact, engine's Flow, Step, Exec and Transit binding will all trigger due to the fact that Exec will be run in the context of anonymous Flow, anonymous Step with anonymous "#exit" Transit attached. I see that as somewhat unexpected, counterintuitive and rarely desirable.
 
 Q2: Providing a custom context in `CallInNewProjectionContext` use case? 
 A2: There is no reason for introducing this additional layer of complexity. The way it looks right now - things are flexible enough the way they are. 

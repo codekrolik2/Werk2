@@ -8,16 +8,21 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.werk2.config.Doc;
 import org.werk2.config.entities.ExtendedFlow;
 import org.werk2.config.entities.ListenerCall;
 import org.werk2.config.entities.StepCall;
 import org.werk2.config.functions.FunctionSignature;
+import org.werk2.config.xml.XmlDocEntry;
 import org.werk2.config.xml.XmlDocumented;
 import org.werk2.config.xml.functions.XmlFunctionSignature;
 
 @XmlType(name = "extendedFlow")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class XmlExtendedFlow extends XmlDocumented implements ExtendedFlow {
+	@XmlElement(required = false)
+    public XmlDocEntry functionDoc;
+
 	@XmlElement(required = true)
 	public String superFlowFunctionName;
 	@XmlElement(required = true)
@@ -43,6 +48,11 @@ public class XmlExtendedFlow extends XmlDocumented implements ExtendedFlow {
     
 	@XmlElement(required = false)
     public Boolean newOverrideListeners;
+
+	@Override
+	public Optional<? extends Doc> getFunctionDoc() {
+		return functionDoc == null ? Optional.empty() : Optional.of(functionDoc);
+	}
 
 	@Override
 	public String getSuperFlowFunctionName() {

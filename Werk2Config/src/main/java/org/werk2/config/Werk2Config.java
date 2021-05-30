@@ -46,7 +46,11 @@ public interface Werk2Config extends Documented {
      */
     public Optional<? extends List<? extends Transit>> getTransits();
     /**
-     * @return Raw function (code)
+     * @return Raw exec function (code)
      */
-    public Optional<? extends List<? extends Function>> getRawFunctions();
+    public Optional<? extends List<? extends Function>> getRawExecFunctions();
+    /**
+     * @return Raw transit function (code)
+     */
+    public Optional<? extends List<? extends Function>> getRawTransitFunctions();
 }

@@ -7,6 +7,7 @@
     <xs:complexContent>
       <xs:extension base="documented">
         <xs:sequence>
+          <xs:element name="functionDoc" type="doc" minOccurs="0"/>
           <xs:element name="superFlowFunctionName" type="xs:string"/>
           <xs:element name="newFunctionName" type="xs:string"/>
           <xs:element name="addSignature" type="signature" minOccurs="0" maxOccurs="unbounded"/>
@@ -25,6 +26,13 @@
   <xs:complexType name="documented" abstract="true">
     <xs:sequence>
       <xs:element name="doc" type="doc" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="doc">
+    <xs:sequence>
+      <xs:element name="title" type="xs:string" minOccurs="0"/>
+      <xs:element name="description" type="xs:string" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
 
@@ -50,13 +58,6 @@
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
-  </xs:complexType>
-
-  <xs:complexType name="doc">
-    <xs:sequence>
-      <xs:element name="title" type="xs:string" minOccurs="0"/>
-      <xs:element name="description" type="xs:string" minOccurs="0"/>
-    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="stepCall">
@@ -135,6 +136,7 @@
     <xs:complexContent>
       <xs:extension base="documented">
         <xs:sequence>
+          <xs:element name="functionDoc" type="doc" minOccurs="0"/>
           <xs:element name="superStepFunctionName" type="xs:string"/>
           <xs:element name="newFunctionName" type="xs:string"/>
           <xs:element name="addSignature" type="signature" minOccurs="0" maxOccurs="unbounded"/>
@@ -235,7 +237,8 @@
           <xs:element name="extendedStep" type="extendedStep" minOccurs="0" maxOccurs="unbounded"/>
           <xs:element name="exec" type="exec" minOccurs="0" maxOccurs="unbounded"/>
           <xs:element name="transit" type="transit" minOccurs="0" maxOccurs="unbounded"/>
-          <xs:element name="rawFunction" type="function" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="rawExecFunction" type="function" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="rawTransitFunction" type="function" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -261,6 +264,8 @@
       <xs:enumeration value="FLOW_FINISHED"/>
       <xs:enumeration value="STEP_STARTED"/>
       <xs:enumeration value="STEP_FINISHED"/>
+      <xs:enumeration value="STEP_ITER_STARTED"/>
+      <xs:enumeration value="STEP_ITER_FINISHED"/>
       <xs:enumeration value="EXECUTOR_STARTED"/>
       <xs:enumeration value="EXECUTOR_FINISHED"/>
       <xs:enumeration value="TRANSITIONER_STARTED"/>

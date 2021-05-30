@@ -196,43 +196,47 @@ public class TestConfigCreator {
 	
 	@SuppressWarnings("unchecked")
 	public Werk2Config buildConfig() {
-	    List<Function> rawFunctions = new ArrayList<>();
-	    rawFunctions.addAll(Arrays.asList(new Function[] {
-    		function("TransitFunction1"),
+	    List<Function> rawExecFunctions = new ArrayList<>();
+	    rawExecFunctions.addAll(Arrays.asList(new Function[] {
     		function("ExecFunction2"),
     		function("ExecFunction3"),
-    		function("TransitFunction4"),
     		function("ExecFunction5")
 	    }));
 	    
+	    List<Function> rawTransitFunctions = new ArrayList<>();
+	    rawTransitFunctions.addAll(Arrays.asList(new Function[] {
+    		function("TransitFunction1"),
+    		function("TransitFunction4")
+	    }));
+	    
 	    List<Exec> execs = Arrays.asList(new Exec[] {
-    		exec(1, "Flow2", false, rawFunctions),
-    		exec(2, "ExecFunction3", false, rawFunctions),
-    		exec(3, "ExecFunction5", true, rawFunctions)
+    		exec(1, "Flow2", false, rawExecFunctions),
+    		exec(2, "ExecFunction3", false, rawExecFunctions),
+    		exec(3, "ExecFunction5", true, rawExecFunctions)
 	    });
 	    
 	    List<Transit> transits = Arrays.asList(new Transit[] {
-    		transit(1, "Step2", false, rawFunctions),
-    		transit(2, "TransitFunction4", false, rawFunctions),
-    		transit(3, "TransitFunction1", false, rawFunctions)
+    		transit(1, "Step2", false, rawExecFunctions),
+    		transit(2, "TransitFunction4", false, rawExecFunctions),
+    		transit(3, "TransitFunction1", false, rawExecFunctions)
 	    });
 	    
 	    List<Step> steps = Arrays.asList(new Step[] {
-    		step(1, new String[] { "Executor1" }, "Transitioner1", false, rawFunctions),
-    		step(2, new String[] { "Executor2" }, "Transitioner2", false, rawFunctions),
-    		step(4, new String[] { "Executor3" }, "TransitFunction4", true, rawFunctions)
+    		step(1, new String[] { "Executor1" }, "Transitioner1", false, rawExecFunctions),
+    		step(2, new String[] { "Executor2" }, "Transitioner2", false, rawExecFunctions),
+    		step(4, new String[] { "Executor3" }, "TransitFunction4", true, rawExecFunctions)
 	    });
 	    
-	    Flow flow2 = flow(2, "Step2", rawFunctions);
+	    Flow flow2 = flow(2, "Step2", rawExecFunctions);
 	    ((List<ListenerCall>)flow2.getListeners().get()).add(FF_F2_1());
 	    
 	    List<Flow> flows = Arrays.asList(new Flow[] {
-	    	flow(1, "Step1", new String[] { "Step4" }, rawFunctions ),
+	    	flow(1, "Step1", new String[] { "Step4" }, rawExecFunctions ),
 	    	flow2,
-	    	flow(3, "Step2", new String[] { "Transitioner3", "TransitFunction4" }, rawFunctions )
+	    	flow(3, "Step2", new String[] { "Transitioner3", "TransitFunction4" }, rawExecFunctions )
 	    });
 
-		Engine engine = engine(rawFunctions);
+		Engine engine = engine(rawExecFunctions);
 
 	    //TODO: add ExtendedSteps and ExtendedFlows
 	    //	Perhaps in a separate test, to keep the test matching the structure defined in docs for reference
@@ -244,7 +248,8 @@ public class TestConfigCreator {
 			Optional.empty(), //ExtendedFlows
 			Optional.empty(), //ExtendedSteps
 			Optional.of(execs), Optional.of(transits),
-			Optional.of(rawFunctions)
+			Optional.of(rawExecFunctions),
+			Optional.of(rawTransitFunctions)
 		);
 	}
 }

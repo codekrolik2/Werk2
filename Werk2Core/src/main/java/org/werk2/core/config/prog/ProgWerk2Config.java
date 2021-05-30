@@ -24,7 +24,8 @@ public class ProgWerk2Config extends ProgDocumented implements Werk2Config {
 			Optional<? extends List<? extends ExtendedFlow>> extendedFlows,
 			Optional<? extends List<? extends ExtendedStep>> extendedSteps,
 			Optional<? extends List<? extends Exec>> execs, Optional<? extends List<? extends Transit>> transits,
-			Optional<? extends List<? extends Function>> rawFunctions) {
+			Optional<? extends List<? extends Function>> rawExecFunctions,
+			Optional<? extends List<? extends Function>> rawTransitFunctions) {
 		super(doc);
 		this.engine = engine;
 		this.flows = flows;
@@ -33,7 +34,8 @@ public class ProgWerk2Config extends ProgDocumented implements Werk2Config {
 		this.extendedSteps = extendedSteps;
 		this.execs = execs;
 		this.transits = transits;
-		this.rawFunctions = rawFunctions;
+		this.rawExecFunctions = rawExecFunctions;
+		this.rawTransitFunctions = rawTransitFunctions;
 	}
     
     @NonNull protected Optional<? extends Engine> engine;
@@ -43,5 +45,6 @@ public class ProgWerk2Config extends ProgDocumented implements Werk2Config {
     @NonNull protected Optional<? extends List<? extends ExtendedStep>> extendedSteps;
     @NonNull protected Optional<? extends List<? extends Exec>> execs;
     @NonNull protected Optional<? extends List<? extends Transit>> transits;
-    @NonNull protected Optional<? extends List<? extends Function>> rawFunctions;
+    @NonNull protected Optional<? extends List<? extends Function>> rawExecFunctions;
+    @NonNull protected Optional<? extends List<? extends Function>> rawTransitFunctions;
 }

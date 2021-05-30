@@ -8,11 +8,13 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.werk2.config.Doc;
 import org.werk2.config.calls.BatchCall;
 import org.werk2.config.calls.Call;
 import org.werk2.config.entities.ExtendedStep;
 import org.werk2.config.entities.ListenerCall;
 import org.werk2.config.functions.FunctionSignature;
+import org.werk2.config.xml.XmlDocEntry;
 import org.werk2.config.xml.XmlDocumented;
 import org.werk2.config.xml.calls.XmlBatchCall;
 import org.werk2.config.xml.calls.XmlCall;
@@ -21,6 +23,9 @@ import org.werk2.config.xml.functions.XmlFunctionSignature;
 @XmlType(name = "extendedStep")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class XmlExtendedStep extends XmlDocumented implements ExtendedStep {
+	@XmlElement(required = false)
+    public XmlDocEntry functionDoc;
+
 	@XmlElement(required = true)
 	public String superStepFunctionName;
 	@XmlElement(required = true)
@@ -46,6 +51,11 @@ public class XmlExtendedStep extends XmlDocumented implements ExtendedStep {
     
 	@XmlElement(required = false)
     public Boolean newOverrideListeners;
+
+	@Override
+	public Optional<? extends Doc> getFunctionDoc() {
+		return functionDoc == null ? Optional.empty() : Optional.of(functionDoc);
+	}
 
 	@Override
 	public String getSuperStepFunctionName() {

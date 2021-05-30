@@ -16,12 +16,13 @@ import lombok.NonNull;
 
 @Getter
 public class ProgExtendedStep extends ProgDocumented implements ExtendedStep {
-	public ProgExtendedStep(Optional<? extends Doc> doc, String superStepFunctionName, String newFunctionName,
+	public ProgExtendedStep(Optional<? extends Doc> doc, Optional<? extends Doc> functionDoc, String superStepFunctionName, String newFunctionName,
 			Optional<? extends List<? extends FunctionSignature>> addSignatures, Optional<Boolean> dropOldSignatures,
 			Optional<BatchCall> addExecBlock, Optional<Boolean> dropOldExecBlock, Optional<? extends Call> newTransit,
 			Optional<? extends List<? extends ListenerCall>> addListeners, Optional<Boolean> dropOldListeners,
 			Optional<Boolean> newOverrideListeners) {
 		super(doc);
+		this.functionDoc = functionDoc;
 		this.superStepFunctionName = superStepFunctionName;
 		this.newFunctionName = newFunctionName;
 		this.addSignatures = addSignatures;
@@ -34,6 +35,7 @@ public class ProgExtendedStep extends ProgDocumented implements ExtendedStep {
 		this.newOverrideListeners = newOverrideListeners;
 	}
 	
+	@NonNull protected Optional<? extends Doc> functionDoc;
 	@NonNull protected String superStepFunctionName;
 	@NonNull protected String newFunctionName;
 	@NonNull protected Optional<? extends List<? extends FunctionSignature>> addSignatures;
