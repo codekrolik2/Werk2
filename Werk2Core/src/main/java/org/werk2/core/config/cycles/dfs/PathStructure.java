@@ -1,4 +1,4 @@
-package org.werk2.core.config.cycles;
+package org.werk2.core.config.cycles.dfs;
 
 import java.util.Deque;
 import java.util.HashSet;

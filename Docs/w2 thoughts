@@ -1,16 +1,22 @@
-*) Draw entity graph in mermaid
-	Flow-specific, etc.
-		- direct graph
-		- DN extended flows and steps graph
-	
+*) Update algorithm: Find all elementary cycles in the graph.
+Actually finding strongly connected components (Tarjans) is quite sufficient
+
+*) Draw compact call graphs in mermaid (complete or function-specific)
+	- direct graph
+	- DN extended flows and steps graph (???)
+	+ anonymous functions
+
+*) Flow Graph vs Call Graph
+	- Flow Graph shows possible transitions between Steps in a Flow, as opposed to call indirection
+
 *) Batch executor
 *) Logical function call - flow -> step -> etc.
 
 *) ?? Step constant starts with $, Flow constant starts with #
 	for readability
 
-*) Test serializeability for Lists and Dictionaries
-	if not serializeable - update type to RUNTIME, warning
+*) Test serializability for Lists and Dictionaries
+	if not serializable - update type to RUNTIME, warning
 
 *) Test type safety
 Type safety - ?premature optimization? - mb warnings at first
@@ -26,7 +32,7 @@ Type safety - ?premature optimization? - mb warnings at first
 	StepCall with StepName
 
 
-Explicit IS_TRANSIT?
++Explicit IS_TRANSIT?
 
 TypeCasters for function calls?
 

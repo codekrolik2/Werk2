@@ -35,21 +35,26 @@ import org.werk2.core.config.prog.entities.ProgTransit;
 import org.werk2.core.config.prog.functions.ProgFunction;
 import org.werk2.core.config.prog.functions.ProgFunctionSignature;
 
-//Builds with cycles
+/**
+ * Builds full call graph from configuration(s)
+ * @author jamirov
+ *
+ */
 public class MermaidCallGraphBuilder {
 	protected static String ENGINE_NAME = "Engine";
-	protected static String EXIT_TRANSIT_FUNCTION_NAME = "#exit";
+	protected static String ANON_PREFIX = "?";
+	protected static String EXIT_TRANSIT_FUNCTION_NAME = ANON_PREFIX + "exit";
 	
-	public Engine engine = null;
-	public Map<String, Flow> flows = new HashMap<>();
-	public Map<String, Step> steps = new HashMap<>();
-	public Map<String, Transit> transits = new HashMap<>();
-	public Map<String, Exec> execs = new HashMap<>();
-	public Map<String, Function> rawExecFunctions = new HashMap<>();
-	public Map<String, Function> rawTransitFunctions = new HashMap<>();
-	
-	public Map<String, GraphNode> graph = new HashMap<>();
-	
+	protected Engine engine = null;
+	protected Map<String, Flow> flows = new HashMap<>();
+	protected Map<String, Step> steps = new HashMap<>();
+	protected Map<String, Transit> transits = new HashMap<>();
+	protected Map<String, Exec> execs = new HashMap<>();
+	protected Map<String, Function> rawExecFunctions = new HashMap<>();
+	protected Map<String, Function> rawTransitFunctions = new HashMap<>();
+
+	protected Map<String, GraphNode> initGraph = new HashMap<>();
+
 	protected int anonFlowCtr = 0;
 	protected int anonStepCtr = 0;
 	protected int anonExecCtr = 0;
@@ -77,7 +82,7 @@ public class MermaidCallGraphBuilder {
 				engine = config.getEngine().get();
 				
 				GraphNode engineNode = new GraphNode(ENGINE_NAME);
-				graph.put(ENGINE_NAME, engineNode);
+				initGraph.put(ENGINE_NAME, engineNode);
 			}
 			
 			if (!config.getFlows().isEmpty())
@@ -254,6 +259,8 @@ public class MermaidCallGraphBuilder {
 		builder.append( String.format("%s %s %s_\n", type.legend(), type.value(), type.legend()) );
 	}
 	
+	//--------------------------- CALL GRAPH BUILDERS ---------------------------
+
 	protected String legendString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("Legend:\n"
@@ -267,53 +274,45 @@ public class MermaidCallGraphBuilder {
 		return builder.toString();
 	}
 	
-	//--------------------------- CALL GRAPH BUILDERS ---------------------------
-
 	/**
-	 * All functions in standalone context.
 	 * All functions in direct call (Engine) context.
 	 * 
 	 * @return Call graph in Mermaid format
 	 */
-	public String buildEverything() {
-		StringBuilder builder = new StringBuilder();
-		builder.append(legendString())
-		.append("```mermaid\n"
-				+ "flowchart LR\n");
+	public Map<String, GraphNode> buildEverything(Optional<StringBuilder> builder) {
+		if (!builder.isEmpty())
+			builder.get().append(legendString())
+			.append("```mermaid\n"
+					+ "flowchart LR\n");
 
 		ParsingContext context = new ParsingContext();
 		if (!engine.getListeners().isEmpty())
 			context.getProjectedListeners().push(engine.getListeners().get());
 		context.getAncestorNames().push(ENGINE_NAME);
 		
+		Map<String, GraphNode> graph = new HashMap<>(initGraph);
 		GraphNode engineNode = graph.get(ENGINE_NAME);
 		
-		for (String functionName : flows.keySet()) {
-			addCall(functionName, null, new ParsingContext(), Optional.of(builder), LinkType.NEW_CONTEXT_CALL);
-			parseDirectFunctionCall(functionName, engineNode, context, Optional.of(builder));
-		}
-		for (String functionName : steps.keySet()) {
-			parseDirectFunctionCall(functionName, engineNode, context, Optional.of(builder));
-		}
-		for (String functionName : transits.keySet()) {
-			parseDirectFunctionCall(functionName, engineNode, context, Optional.of(builder));
-		}
-		for (String functionName : execs.keySet()) {
-			parseDirectFunctionCall(functionName, engineNode, context, Optional.of(builder));
-		}
-		for (String functionName : rawExecFunctions.keySet()) {
-			parseDirectFunctionCall(functionName, engineNode, context, Optional.of(builder));
-		}
-		for (String functionName : rawTransitFunctions.keySet()) {
-			parseDirectFunctionCall(functionName, engineNode, context, Optional.of(builder));
-		}
+		for (String functionName : flows.keySet())
+			parseDirectFunctionCall(functionName, engineNode, context, builder, graph);
+		for (String functionName : steps.keySet())
+			parseDirectFunctionCall(functionName, engineNode, context, builder, graph);
+		for (String functionName : transits.keySet())
+			parseDirectFunctionCall(functionName, engineNode, context, builder, graph);
+		for (String functionName : execs.keySet())
+			parseDirectFunctionCall(functionName, engineNode, context, builder, graph);
+		for (String functionName : rawExecFunctions.keySet())
+			parseDirectFunctionCall(functionName, engineNode, context, builder, graph);
+		for (String functionName : rawTransitFunctions.keySet())
+			parseDirectFunctionCall(functionName, engineNode, context, builder, graph);
 		
 		if (!engine.getListeners().isEmpty())
 			context.getProjectedListeners().pop();
 		context.getAncestorNames().pop();
 		
-		builder.append("```");
-		return builder.toString();
+		if (!builder.isEmpty())
+			builder.get().append("```");
+		return graph;
 	}
 
 	/**
@@ -321,23 +320,24 @@ public class MermaidCallGraphBuilder {
 	 * 
 	 * @return Call graph in Mermaid format
 	 */
-	public String buildAllFlows() {
-		StringBuilder builder = new StringBuilder();
-		builder.append(legendString())
-		.append("```mermaid\n"
-				+ "flowchart LR\n");
+	public Map<String, GraphNode> buildAllFlows(Optional<StringBuilder> builder) {
+		if (!builder.isEmpty())
+			builder.get().append(legendString())
+			.append("```mermaid\n"
+					+ "flowchart LR\n");
 
 		ParsingContext context = new ParsingContext();
 		if (!engine.getListeners().isEmpty())
 			context.getProjectedListeners().push(engine.getListeners().get());
 		context.getAncestorNames().push(ENGINE_NAME);
 		
+		Map<String, GraphNode> graph = new HashMap<>(initGraph);
 		GraphNode engineNode = graph.get(ENGINE_NAME);
 		for (Werk2Config config : configs) {
 			if (!config.getFlows().isEmpty()) {
 				for (Flow flow : config.getFlows().get()) {
 					addCall(flow.getFunction().getFunctionName(), engineNode, context, 
-							Optional.of(builder), LinkType.PROJECTED_CALL);
+							builder, LinkType.PROJECTED_CALL, graph);
 				}
 			}
 		}
@@ -346,8 +346,9 @@ public class MermaidCallGraphBuilder {
 			context.getProjectedListeners().pop();
 		context.getAncestorNames().pop();
 		
-		builder.append("```");
-		return builder.toString();
+		if (!builder.isEmpty())
+			builder.get().append("```");
+		return graph;
 	}
 
 	/**
@@ -356,27 +357,29 @@ public class MermaidCallGraphBuilder {
 	 * @param functionName Entry point function
 	 * @return Call graph in Mermaid format
 	 */
-	public String buildFunction(String functionName) {
-		StringBuilder builder = new StringBuilder();
-		builder.append(legendString())
-		.append("```mermaid\n"
-				+ "flowchart LR\n");
+	public Map<String, GraphNode> buildFunction(String functionName, Optional<StringBuilder> builder) {
+		if (!builder.isEmpty())
+			builder.get().append(legendString())
+			.append("```mermaid\n"
+					+ "flowchart LR\n");
 		
 		ParsingContext context = new ParsingContext();
 		if (!engine.getListeners().isEmpty())
 			context.getProjectedListeners().push(engine.getListeners().get());
 		context.getAncestorNames().push(ENGINE_NAME);
 		
+		Map<String, GraphNode> graph = new HashMap<>(initGraph);
 		GraphNode engineNode = graph.get(ENGINE_NAME);
 		
-		parseDirectFunctionCall(functionName, engineNode, context, Optional.of(builder));
+		parseDirectFunctionCall(functionName, engineNode, context, builder, graph);
 		
 		if (!engine.getListeners().isEmpty())
 			context.getProjectedListeners().pop();
 		context.getAncestorNames().pop();
 		
-		builder.append("```");
-		return builder.toString();
+		if (!builder.isEmpty())
+			builder.get().append("```");
+		return graph;
 	}
 
 	/**
@@ -385,24 +388,27 @@ public class MermaidCallGraphBuilder {
 	 * @param functionName Entry point function
 	 * @return Call graph in Mermaid format
 	 */
-	public String buildStandaloneFunction(String functionName) {
-		StringBuilder builder = new StringBuilder();
-		builder.append(legendString())
-		.append("```mermaid\n"
-				+ "flowchart LR\n");
+	public Map<String, GraphNode> buildStandaloneFunction(String functionName, Optional<StringBuilder> builder) {
+		if (!builder.isEmpty())
+			builder.get().append(legendString())
+			.append("```mermaid\n"
+					+ "flowchart LR\n");
 		
+		Map<String, GraphNode> graph = new HashMap<>(initGraph);
+
 		ParsingContext context = new ParsingContext();
-		addCall(functionName, null, context, Optional.of(builder), LinkType.PROJECTED_CALL);
+		addCall(functionName, null, context, builder, LinkType.PROJECTED_CALL, graph);
 		
-		builder.append("```");
-		return builder.toString();
+		if (!builder.isEmpty())
+			builder.get().append("```");
+		return graph;
 	}
 
 	//--------------------------- ??? ---------------------------
 
 	protected void addCall(String functionName, GraphNode node, ParsingContext parsingContext, 
-			Optional<StringBuilder> mermaidBuilder, LinkType linkType) {
-		GraphNode callNode = parseFunction(functionName, parsingContext, mermaidBuilder);
+			Optional<StringBuilder> mermaidBuilder, LinkType linkType, Map<String, GraphNode> graph) {
+		GraphNode callNode = parseFunction(functionName, parsingContext, mermaidBuilder, graph);
 		if (node != null) {
 			node.getLinks().add(callNode.getName());
 		
@@ -418,7 +424,7 @@ public class MermaidCallGraphBuilder {
 		}
 	}
 	
-	protected void addCall(Call c, GraphNode node, ParsingContext parsingContext, Optional<StringBuilder> mermaidBuilder, LinkType linkType) {
+	protected void addCall(Call c, GraphNode node, ParsingContext parsingContext, Optional<StringBuilder> mermaidBuilder, LinkType linkType, Map<String, GraphNode> graph) {
 		String functionName = c.getFunctionName();
 		if (c instanceof StepCall) {
 			StepCall stepCall = (StepCall)c;
@@ -426,17 +432,17 @@ public class MermaidCallGraphBuilder {
 				functionName = stepCall.getStepAlias().get() + "/" + functionName;
 		}
 		
-		addCall(functionName, node, parsingContext, mermaidBuilder, linkType);
+		addCall(functionName, node, parsingContext, mermaidBuilder, linkType, graph);
 	}
 	
-	protected void addBatchCall(BatchCall batch, GraphNode node, ParsingContext parsingContext, Optional<StringBuilder> mermaidBuilder, LinkType linkType) {
+	protected void addBatchCall(BatchCall batch, GraphNode node, ParsingContext parsingContext, Optional<StringBuilder> mermaidBuilder, LinkType linkType, Map<String, GraphNode> graph) {
 		if (!batch.getCalls().isEmpty())
 			for (Call c : batch.getCalls().get())
-				addCall(c, node, parsingContext, mermaidBuilder, linkType);
+				addCall(c, node, parsingContext, mermaidBuilder, linkType, graph);
 		
 		if (!batch.getBatches().isEmpty())
 			for (BatchCall b : batch.getBatches().get())
-				addBatchCall(b, node, parsingContext, mermaidBuilder, linkType);
+				addBatchCall(b, node, parsingContext, mermaidBuilder, linkType, graph);
 	}
 	
 	public FunctionType getType(String functionName) {
@@ -462,34 +468,34 @@ public class MermaidCallGraphBuilder {
 	}
 	
 	public void parseDirectFunctionCall(String functionName, GraphNode engineNode, ParsingContext engineContext, 
-			Optional<StringBuilder> mermaidBuilder) {
+			Optional<StringBuilder> mermaidBuilder, Map<String, GraphNode> graph) {
 		FunctionType functionType = getType(functionName);
 		switch (functionType) {
 			case FLOW : 
-				addCall(functionName, engineNode, engineContext, mermaidBuilder, LinkType.PROJECTED_CALL);
+				addCall(functionName, engineNode, engineContext, mermaidBuilder, LinkType.PROJECTED_CALL, graph);
 				break;
 			case STEP : {
 				Call flowCall = anonFlow(functionName);
-				addCall(flowCall, engineNode, engineContext, mermaidBuilder, LinkType.PROJECTED_CALL);
+				addCall(flowCall, engineNode, engineContext, mermaidBuilder, LinkType.PROJECTED_CALL, graph);
 				break;
 			}
 			case EXEC : {
 				Call stepCall = anonStepForExecFunction(functionName);
 				Call flowCall = anonFlow(stepCall.getFunctionName());
-				addCall(flowCall, engineNode, engineContext, mermaidBuilder, LinkType.PROJECTED_CALL);
+				addCall(flowCall, engineNode, engineContext, mermaidBuilder, LinkType.PROJECTED_CALL, graph);
 				break;
 			}
 			case TRANSIT : {
 				Call stepCall = anonStepForTransitFunction(functionName);
 				Call flowCall = anonFlow(stepCall.getFunctionName());
-				addCall(flowCall, engineNode, engineContext, mermaidBuilder, LinkType.PROJECTED_CALL);
+				addCall(flowCall, engineNode, engineContext, mermaidBuilder, LinkType.PROJECTED_CALL, graph);
 				break;
 			}
 			case RAW_EXEC_FUNCTION : {
 				Call execCall = anonExec(functionName);
 				Call stepCall = anonStepForExecFunction(execCall.getFunctionName());
 				Call flowCall = anonFlow(stepCall.getFunctionName());
-				addCall(flowCall, engineNode, engineContext, mermaidBuilder, LinkType.PROJECTED_CALL);
+				addCall(flowCall, engineNode, engineContext, mermaidBuilder, LinkType.PROJECTED_CALL, graph);
 				break;
 			}
 			default : {
@@ -497,17 +503,17 @@ public class MermaidCallGraphBuilder {
 				Call transitCall = anonTransit(functionName);
 				Call stepCall = anonStepForTransitFunction(transitCall.getFunctionName());
 				Call flowCall = anonFlow(stepCall.getFunctionName());
-				addCall(flowCall, engineNode, engineContext, mermaidBuilder, LinkType.PROJECTED_CALL);
+				addCall(flowCall, engineNode, engineContext, mermaidBuilder, LinkType.PROJECTED_CALL, graph);
 				break;
 			}
 		}
 	}
 
-	//--------------------------- ENGINE ---------------------------
+	//--------------------------- ANONYMOUS FUNCTIONS ---------------------------
 	
 	protected Call anonFlow(String functionName) {
 		anonFlowCtr++;
-		String anonFlowName = "#flow_" + anonFlowCtr;
+		String anonFlowName = ANON_PREFIX + "flow_" + anonFlowCtr;
 		
 		FunctionSignature signature = new ProgFunctionSignature(Optional.empty(), Optional.empty());
 		Function anonFlowFunction = new ProgFunction(Optional.empty(), anonFlowName, Optional.empty(),
@@ -523,7 +529,7 @@ public class MermaidCallGraphBuilder {
 	
 	protected Call anonStepForExecFunction(String execFunctionName) {
 		anonStepCtr++;
-		String anonStepName = "#step_" + anonStepCtr;
+		String anonStepName = ANON_PREFIX + "step_" + anonStepCtr;
 		FunctionSignature signature = new ProgFunctionSignature(Optional.empty(), Optional.empty());
 		Function anonStepFunction = new ProgFunction(Optional.empty(), anonStepName, Optional.empty(),
 				Arrays.asList(new FunctionSignature[] { signature }));
@@ -543,43 +549,9 @@ public class MermaidCallGraphBuilder {
 		return new ProgCall(Optional.empty(), anonStepName, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
 	}
 	
-	//--------------------------- ??? ---------------------------
-	
-	public GraphNode parseFunction(String functionName, ParsingContext context, Optional<StringBuilder> mermaidBuilder) {
-		String fullFunctionName = context.getNamePrefix() + functionName;
-		GraphNode functionNode = graph.get(fullFunctionName);
-		if (functionNode != null)
-			return functionNode;
-		
-		FunctionType functionType = getType(functionName);
-		switch (functionType) {
-			case FLOW : 
-				functionNode = parseFlow(functionName, flows.get(functionName), context, mermaidBuilder);
-				break;
-			case STEP : 
-				functionNode = parseStep(functionName, steps.get(functionName), context, mermaidBuilder);
-				break;
-			case EXEC : 
-				functionNode = parseExec(functionName, execs.get(functionName), context, mermaidBuilder);
-				break;
-			case TRANSIT : 
-				functionNode = parseTransit(functionName, transits.get(functionName), context, mermaidBuilder);
-				break;
-			case RAW_EXEC_FUNCTION : 
-			case RAW_TRANSIT_FUNCTION : 
-				functionNode = new GraphNode(fullFunctionName);
-				graph.put(fullFunctionName, functionNode);
-				break;
-		}
-		
-		return functionNode;
-	}
-
-	//--------------------------- FLOW ---------------------------
-	
 	protected Call anonStepForTransitFunction(String transitFunctionName) {
 		anonStepCtr++;
-		String anonStepName = "#step_" + anonStepCtr;
+		String anonStepName = ANON_PREFIX + "step_" + anonStepCtr;
 		FunctionSignature signature = new ProgFunctionSignature(Optional.empty(), Optional.empty());
 		Function anonStepFunction = new ProgFunction(Optional.empty(), anonStepName, Optional.empty(),
 				Arrays.asList(new FunctionSignature[] { signature }));
@@ -599,7 +571,7 @@ public class MermaidCallGraphBuilder {
 	
 	protected Call anonTransit(String functionName) {
 		anonTransitCtr++;
-		String anonTransitName = "#transit_" + anonTransitCtr;
+		String anonTransitName = ANON_PREFIX + "transit_" + anonTransitCtr;
 		Transit anonTransit = new ProgTransit(Optional.empty(), anonTransitName, functionName, Optional.empty(), Optional.empty());
 		transits.put(anonTransitName, anonTransit);
 		
@@ -608,14 +580,48 @@ public class MermaidCallGraphBuilder {
 	
 	protected Call anonExec(String functionName) {
 		anonExecCtr++;
-		String anonExecName = "#exec_" + anonExecCtr;
+		String anonExecName = ANON_PREFIX + "exec_" + anonExecCtr;
 		Exec anonExec = new ProgExec(Optional.empty(), anonExecName, functionName, Optional.empty(), Optional.empty());
 		execs.put(anonExecName, anonExec);
 		
 		return new ProgCall(Optional.empty(), anonExecName, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
 	}
+	
+	//--------------------------- GENERIC FUNCTION ---------------------------
+	
+	protected GraphNode parseFunction(String functionName, ParsingContext context, Optional<StringBuilder> mermaidBuilder, Map<String, GraphNode> graph) {
+		String fullFunctionName = context.getNamePrefix() + functionName;
+		GraphNode functionNode = graph.get(fullFunctionName);
+		if (functionNode != null)
+			return functionNode;
+		
+		FunctionType functionType = getType(functionName);
+		switch (functionType) {
+			case FLOW : 
+				functionNode = parseFlow(functionName, flows.get(functionName), context, mermaidBuilder, graph);
+				break;
+			case STEP : 
+				functionNode = parseStep(functionName, steps.get(functionName), context, mermaidBuilder, graph);
+				break;
+			case EXEC : 
+				functionNode = parseExec(functionName, execs.get(functionName), context, mermaidBuilder, graph);
+				break;
+			case TRANSIT : 
+				functionNode = parseTransit(functionName, transits.get(functionName), context, mermaidBuilder, graph);
+				break;
+			case RAW_EXEC_FUNCTION : 
+			case RAW_TRANSIT_FUNCTION : 
+				functionNode = new GraphNode(fullFunctionName);
+				graph.put(fullFunctionName, functionNode);
+				break;
+		}
+		
+		return functionNode;
+	}
 
-	public GraphNode parseFlow(String flowFunctionName, Flow flow, ParsingContext context, Optional<StringBuilder> mermaidBuilder) {
+	//--------------------------- FLOW ---------------------------
+
+	protected GraphNode parseFlow(String flowFunctionName, Flow flow, ParsingContext context, Optional<StringBuilder> mermaidBuilder, Map<String, GraphNode> graph) {
 		if (!flow.getOverrideListeners().isEmpty() && flow.getOverrideListeners().get())
 			context = new ParsingContext();
 		
@@ -629,11 +635,11 @@ public class MermaidCallGraphBuilder {
 		
 		//Listeners
 		for (ListenerCall listener : context.filterListeners(new Event[] { Event.FLOW_STARTED, Event.FLOW_FINISHED }))
-			addBatchCall(listener, flowNode, new ParsingContext(), mermaidBuilder, LinkType.PROJECTED_LISTENER);
+			addBatchCall(listener, flowNode, new ParsingContext(), mermaidBuilder, LinkType.PROJECTED_LISTENER, graph);
 
 		if (!flow.getListeners().isEmpty())
 		for (ListenerCall listener : ParsingContext.filterListeners(new Event[] { Event.FLOW_STARTED, Event.FLOW_FINISHED }, flow.getListeners().get()))
-			addBatchCall(listener, flowNode, new ParsingContext(), mermaidBuilder, LinkType.OWN_LISTENER);
+			addBatchCall(listener, flowNode, new ParsingContext(), mermaidBuilder, LinkType.OWN_LISTENER, graph);
 
 		//Push context
 		if (!flow.getListeners().isEmpty())
@@ -656,17 +662,17 @@ public class MermaidCallGraphBuilder {
 				case RAW_EXEC_FUNCTION : 
 					throw new RuntimeException("Raw Exec Function can't be used as a Step");
 				case STEP : 
-					addCall(step, flowNode, context, mermaidBuilder, LinkType.PROJECTED_CALL);
+					addCall(step, flowNode, context, mermaidBuilder, LinkType.PROJECTED_CALL, graph);
 					break;
 				case TRANSIT : {
 					Call stepCall = anonStepForTransitFunction(step.getFunctionName());
-					addCall(stepCall, flowNode, context, mermaidBuilder, LinkType.PROJECTED_CALL);
+					addCall(stepCall, flowNode, context, mermaidBuilder, LinkType.PROJECTED_CALL, graph);
 					break;
 				}
 				case RAW_TRANSIT_FUNCTION : {
 					Call transitCall = anonTransit(step.getFunctionName());
 					Call stepCall = anonStepForTransitFunction(transitCall.getFunctionName());
-					addCall(stepCall, flowNode, context, mermaidBuilder, LinkType.PROJECTED_CALL);
+					addCall(stepCall, flowNode, context, mermaidBuilder, LinkType.PROJECTED_CALL, graph);
 					break;
 				}
 			}
@@ -682,7 +688,7 @@ public class MermaidCallGraphBuilder {
 
 	//--------------------------- STEP ---------------------------
 	
-	protected void addStepTransitCall(Call c, GraphNode node, ParsingContext context, Optional<StringBuilder> mermaidBuilder) {
+	protected void addStepTransitCall(Call c, GraphNode node, ParsingContext context, Optional<StringBuilder> mermaidBuilder, Map<String, GraphNode> graph) {
 		FunctionType functionType = getType(c.getFunctionName());
 		switch (functionType) {
 			case FLOW : 
@@ -693,21 +699,21 @@ public class MermaidCallGraphBuilder {
 				throw new RuntimeException("Raw Exec function can't be used as a Transit");
 				
 			case TRANSIT : 
-				addCall(c, node, context, mermaidBuilder, LinkType.PROJECTED_CALL);
+				addCall(c, node, context, mermaidBuilder, LinkType.PROJECTED_CALL, graph);
 				break;
 			case STEP : 
 			case RAW_TRANSIT_FUNCTION : 
 				Call transitCall = anonTransit(c.getFunctionName());
-				addCall(transitCall, node, context, mermaidBuilder, LinkType.PROJECTED_CALL);
+				addCall(transitCall, node, context, mermaidBuilder, LinkType.PROJECTED_CALL, graph);
 				break;
 		}
 	}
 
-	protected void addStepExecCall(Call c, GraphNode node, ParsingContext context, Optional<StringBuilder> mermaidBuilder) {
+	protected void addStepExecCall(Call c, GraphNode node, ParsingContext context, Optional<StringBuilder> mermaidBuilder, Map<String, GraphNode> graph) {
 		FunctionType functionType = getType(c.getFunctionName());
 		switch (functionType) {
 			case EXEC : 
-				addCall(c, node, context, mermaidBuilder, LinkType.PROJECTED_CALL);
+				addCall(c, node, context, mermaidBuilder, LinkType.PROJECTED_CALL, graph);
 				break;
 			case FLOW : 
 			case STEP : 
@@ -715,22 +721,22 @@ public class MermaidCallGraphBuilder {
 			case RAW_EXEC_FUNCTION : 
 			case RAW_TRANSIT_FUNCTION : 
 				Call execCall = anonExec(c.getFunctionName());
-				addCall(execCall, node, context, mermaidBuilder, LinkType.PROJECTED_CALL);
+				addCall(execCall, node, context, mermaidBuilder, LinkType.PROJECTED_CALL, graph);
 				break;
 		}
 	}
 
-	protected void addStepExecBlock(BatchCall batch, GraphNode node, ParsingContext parsingContext, Optional<StringBuilder> mermaidBuilder) {
+	protected void addStepExecBlock(BatchCall batch, GraphNode node, ParsingContext parsingContext, Optional<StringBuilder> mermaidBuilder, Map<String, GraphNode> graph) {
 		if (!batch.getCalls().isEmpty())
 			for (Call c : batch.getCalls().get())
-				addStepExecCall(c, node, parsingContext, mermaidBuilder);
+				addStepExecCall(c, node, parsingContext, mermaidBuilder, graph);
 		
 		if (!batch.getBatches().isEmpty())
 			for (BatchCall b : batch.getBatches().get())
-				addStepExecBlock(b, node, parsingContext, mermaidBuilder);
+				addStepExecBlock(b, node, parsingContext, mermaidBuilder, graph);
 	}
 
-	public GraphNode parseStep(String stepFunctionName, Step step, ParsingContext context, Optional<StringBuilder> mermaidBuilder) {
+	protected GraphNode parseStep(String stepFunctionName, Step step, ParsingContext context, Optional<StringBuilder> mermaidBuilder, Map<String, GraphNode> graph) {
 		if (!step.getOverrideListeners().isEmpty() && step.getOverrideListeners().get())
 			context = new ParsingContext();
 		
@@ -746,13 +752,13 @@ public class MermaidCallGraphBuilder {
 		for (ListenerCall listener : context.filterListeners(
 				new Event[] { Event.STEP_STARTED, Event.STEP_FINISHED, 
 								Event.STEP_ITER_STARTED, Event.STEP_ITER_FINISHED })) {
-			addBatchCall(listener, stepNode, new ParsingContext(), mermaidBuilder, LinkType.PROJECTED_LISTENER);
+			addBatchCall(listener, stepNode, new ParsingContext(), mermaidBuilder, LinkType.PROJECTED_LISTENER, graph);
 		}
 
 		if (!step.getListeners().isEmpty())
 		for (ListenerCall listener : ParsingContext.filterListeners(new Event[] { Event.STEP_STARTED, Event.STEP_FINISHED, 
 				Event.STEP_ITER_STARTED, Event.STEP_ITER_FINISHED }, step.getListeners().get()))
-			addBatchCall(listener, stepNode, new ParsingContext(), mermaidBuilder, LinkType.OWN_LISTENER);
+			addBatchCall(listener, stepNode, new ParsingContext(), mermaidBuilder, LinkType.OWN_LISTENER, graph);
 		
 		//Push context
 		if (!step.getListeners().isEmpty())
@@ -761,10 +767,10 @@ public class MermaidCallGraphBuilder {
 
 		//Executors
 		if (!step.getExecBlock().isEmpty())
-			addStepExecBlock(step.getExecBlock().get(), stepNode, context, mermaidBuilder);
+			addStepExecBlock(step.getExecBlock().get(), stepNode, context, mermaidBuilder, graph);
 
 		//Transit
-		addStepTransitCall(step.getTransit(), stepNode, context, mermaidBuilder);
+		addStepTransitCall(step.getTransit(), stepNode, context, mermaidBuilder, graph);
 		
 		//Pop context
 		if (!step.getListeners().isEmpty())
@@ -776,7 +782,7 @@ public class MermaidCallGraphBuilder {
 	
 	//--------------------------- EXEC ---------------------------
 	
-	public GraphNode parseExec(String execFunctionName, Exec exec, ParsingContext context, Optional<StringBuilder> mermaidBuilder) {
+	protected GraphNode parseExec(String execFunctionName, Exec exec, ParsingContext context, Optional<StringBuilder> mermaidBuilder, Map<String, GraphNode> graph) {
 		if (!exec.getOverrideListeners().isEmpty() && exec.getOverrideListeners().get())
 			context = new ParsingContext();
 		
@@ -791,12 +797,12 @@ public class MermaidCallGraphBuilder {
 		//Listeners
 		for (ListenerCall listener : context.filterListeners(
 				new Event[] { Event.EXECUTOR_STARTED, Event.EXECUTOR_FINISHED })) {
-			addBatchCall(listener, execNode, new ParsingContext(), mermaidBuilder, LinkType.PROJECTED_LISTENER);
+			addBatchCall(listener, execNode, new ParsingContext(), mermaidBuilder, LinkType.PROJECTED_LISTENER, graph);
 		}
 
 		if (!exec.getListeners().isEmpty())
 		for (ListenerCall listener : ParsingContext.filterListeners(new Event[] { Event.EXECUTOR_STARTED, Event.EXECUTOR_FINISHED }, exec.getListeners().get()))
-			addBatchCall(listener, execNode, new ParsingContext(), mermaidBuilder, LinkType.OWN_LISTENER);
+			addBatchCall(listener, execNode, new ParsingContext(), mermaidBuilder, LinkType.OWN_LISTENER, graph);
 		
 		//Push context
 		if (!exec.getListeners().isEmpty())
@@ -804,7 +810,7 @@ public class MermaidCallGraphBuilder {
 		context.getAncestorNames().push(execFunctionName);
 
 		//Called function
-		addCall(exec.getCalledFunctionName(), execNode, new ParsingContext(), mermaidBuilder, LinkType.NEW_CONTEXT_CALL);
+		addCall(exec.getCalledFunctionName(), execNode, new ParsingContext(), mermaidBuilder, LinkType.NEW_CONTEXT_CALL, graph);
 		
 		//Pop context
 		if (!exec.getListeners().isEmpty())
@@ -816,7 +822,7 @@ public class MermaidCallGraphBuilder {
 	
 	//--------------------------- TRANSIT ---------------------------
 	
-	public GraphNode parseTransit(String transitFunctionName, Transit transit, ParsingContext context, Optional<StringBuilder> mermaidBuilder) {
+	protected GraphNode parseTransit(String transitFunctionName, Transit transit, ParsingContext context, Optional<StringBuilder> mermaidBuilder, Map<String, GraphNode> graph) {
 		if (!transit.getOverrideListeners().isEmpty() && transit.getOverrideListeners().get())
 			context = new ParsingContext();
 		
@@ -831,12 +837,12 @@ public class MermaidCallGraphBuilder {
 		//Listeners
 		for (ListenerCall listener : context.filterListeners(
 				new Event[] { Event.TRANSITIONER_STARTED, Event.TRANSITIONER_FINISHED })) {
-			addBatchCall(listener, transitNode, new ParsingContext(), mermaidBuilder, LinkType.PROJECTED_LISTENER);
+			addBatchCall(listener, transitNode, new ParsingContext(), mermaidBuilder, LinkType.PROJECTED_LISTENER, graph);
 		}
 
 		if (!transit.getListeners().isEmpty())
 		for (ListenerCall listener : ParsingContext.filterListeners(new Event[] { Event.TRANSITIONER_STARTED, Event.TRANSITIONER_FINISHED }, transit.getListeners().get()))
-			addBatchCall(listener, transitNode, new ParsingContext(), mermaidBuilder, LinkType.OWN_LISTENER);
+			addBatchCall(listener, transitNode, new ParsingContext(), mermaidBuilder, LinkType.OWN_LISTENER, graph);
 		
 		//Push context
 		if (!transit.getListeners().isEmpty())
@@ -844,7 +850,7 @@ public class MermaidCallGraphBuilder {
 		context.getAncestorNames().push(transitFunctionName);
 
 		//Called function
-		addCall(transit.getCalledFunctionName(), transitNode, new ParsingContext(), mermaidBuilder, LinkType.NEW_CONTEXT_CALL);
+		addCall(transit.getCalledFunctionName(), transitNode, new ParsingContext(), mermaidBuilder, LinkType.NEW_CONTEXT_CALL, graph);
 		
 		//Pop context
 		if (!transit.getListeners().isEmpty())

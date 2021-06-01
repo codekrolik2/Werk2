@@ -7,14 +7,14 @@ import java.util.Arrays;
 
 import org.junit.Test;
 import org.werk2.common.WerkConfigException;
-import org.werk2.core.config.cycles.CycleFinder;
 import org.werk2.core.config.cycles.GraphNode;
-import org.werk2.core.config.cycles.PathStructure;
+import org.werk2.core.config.cycles.dfs.DFSCycleFinder;
+import org.werk2.core.config.cycles.dfs.PathStructure;
 
-public class TestCycleFinder {
+public class TestDFSCycleFinder {
 	@Test(expected = WerkConfigException.class)
 	public void test() throws WerkConfigException {
-		CycleFinder finder = new CycleFinder();
+		DFSCycleFinder finder = new DFSCycleFinder();
 		
 		GraphNode v0 = new GraphNode("0");
 		GraphNode v1 = new GraphNode("1");
@@ -38,7 +38,7 @@ public class TestCycleFinder {
 	
 	@Test(expected = WerkConfigException.class)
 	public void test0() throws WerkConfigException {
-		CycleFinder finder = new CycleFinder();
+		DFSCycleFinder finder = new DFSCycleFinder();
 		
 		GraphNode v0 = new GraphNode("0");
 		GraphNode v1 = new GraphNode("1");
@@ -61,7 +61,7 @@ public class TestCycleFinder {
 	
 	@Test
 	public void test1() throws WerkConfigException {
-		CycleFinder finder = new CycleFinder();
+		DFSCycleFinder finder = new DFSCycleFinder();
 		
 		GraphNode v0 = new GraphNode("0");
 		GraphNode v1 = new GraphNode("1");
@@ -90,7 +90,7 @@ public class TestCycleFinder {
 	
 	@Test
 	public void test2() throws WerkConfigException {
-		CycleFinder finder = new CycleFinder();
+		DFSCycleFinder finder = new DFSCycleFinder();
 		
 		GraphNode v0 = new GraphNode("0");
 		GraphNode v1 = new GraphNode("1");
@@ -113,7 +113,7 @@ public class TestCycleFinder {
 	
 	@Test
 	public void test3() throws WerkConfigException {
-		CycleFinder finder = new CycleFinder();
+		DFSCycleFinder finder = new DFSCycleFinder();
 		
 		GraphNode v0 = new GraphNode("0");
 		GraphNode v1 = new GraphNode("1");
@@ -146,7 +146,7 @@ public class TestCycleFinder {
 	
 	@Test
 	public void test4() throws WerkConfigException {
-		CycleFinder finder = new CycleFinder();
+		DFSCycleFinder finder = new DFSCycleFinder();
 		
 		GraphNode v0 = new GraphNode("0");
 		GraphNode v1 = new GraphNode("1");
@@ -178,7 +178,7 @@ public class TestCycleFinder {
 	
 	@Test
 	public void test5() throws WerkConfigException {
-		CycleFinder finder = new CycleFinder();
+		DFSCycleFinder finder = new DFSCycleFinder();
 		
 		GraphNode v0 = new GraphNode("0");
 		GraphNode v1 = new GraphNode("1");
@@ -195,7 +195,7 @@ public class TestCycleFinder {
 	
 	@Test
 	public void test6() throws WerkConfigException {
-		CycleFinder finder = new CycleFinder();
+		DFSCycleFinder finder = new DFSCycleFinder();
 		
 		GraphNode v0 = new GraphNode("0");
 		GraphNode v1 = new GraphNode("1");

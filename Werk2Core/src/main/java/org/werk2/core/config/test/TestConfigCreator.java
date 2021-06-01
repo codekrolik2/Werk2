@@ -212,12 +212,14 @@ public class TestConfigCreator {
 	    List<Exec> execs = Arrays.asList(new Exec[] {
     		exec(1, "Flow2", false, rawExecFunctions),
     		exec(2, "ExecFunction3", false, rawExecFunctions),
-    		exec(3, "ExecFunction5", true, rawExecFunctions)
+    		//exec(3, "ExecFunction5", true, rawExecFunctions)
+    		exec(3, "Step4", true, rawExecFunctions)
 	    });
 	    
 	    List<Transit> transits = Arrays.asList(new Transit[] {
     		transit(1, "Step2", false, rawExecFunctions),
-    		transit(2, "TransitFunction4", false, rawExecFunctions),
+    		transit(2, "Step2", false, rawExecFunctions),
+    		//transit(2, "TransitFunction4", false, rawExecFunctions),
     		transit(3, "TransitFunction1", false, rawExecFunctions)
 	    });
 	    
