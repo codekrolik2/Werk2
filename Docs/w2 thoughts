@@ -1,3 +1,9 @@
+*) Write tests for CallGraphBuilder
+
+*) Finish config validator
+
+*) Write tests for config validator
+
 *) Update algorithm: Find all elementary cycles in the graph.
 Actually finding strongly connected components (Tarjans) is quite sufficient
 

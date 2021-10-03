@@ -1,33 +1,21 @@
 package org.werk2.core.config.cycles.dfs;
 
-import java.util.List;
-
 import org.werk2.core.config.cycles.GraphNode;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
-@RequiredArgsConstructor
-public class DFSNode {
-	@NonNull protected GraphNode node;
-	
-	public DFSNode(String name) {
-		this.node = new GraphNode(name);
-	}
-
+@Getter
+@Setter
+public class DFSNode extends GraphNode {
 	protected boolean visited = false;
 	protected boolean entered = false;
 
-	public List<String> getLinks() {
-		return node.getLinks();
+	public DFSNode(GraphNode node) {
+		super(node.getName(), node.getLinks());
 	}
 	
-	public String getName() {
-		return node.getName();
-	}
-	
-	@Override
-	public String toString() {
-		return node.toString();
+	public DFSNode(String name) {
+		super(name);
 	}
 }

@@ -11,14 +11,14 @@ import org.werk2.core.config.cycles.GraphNode;
 import org.werk2.core.config.cycles.dfs.DFSCycleFinder;
 import org.werk2.core.config.cycles.dfs.PathStructure;
 import org.werk2.core.config.cycles.tarjan.Tarjan;
-import org.werk2.core.config.parse.MermaidCallGraphBuilder;
+import org.werk2.core.config.parse.CallGraphBuilder;
 
-public class TestMermaidCallGraphBuilder {
+public class TestCallGraphBuilder {
 	public static void main(String[] args) throws WerkConfigException {
 		TestConfigCreator configCreator = new TestConfigCreator();
 		Werk2Config config = configCreator.buildConfig();
 		
-		MermaidCallGraphBuilder graphBuilder = new MermaidCallGraphBuilder(Arrays.asList(new Werk2Config[] {config}));
+		CallGraphBuilder graphBuilder = new CallGraphBuilder(Arrays.asList(new Werk2Config[] {config}));
 		
 		StringBuilder builder = new StringBuilder();
 		System.out.println("----------------------------------------------------------------");

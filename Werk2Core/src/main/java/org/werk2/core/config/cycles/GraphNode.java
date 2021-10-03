@@ -15,12 +15,13 @@ import lombok.Setter;
 public class GraphNode {
 	@NonNull protected String name;
 	protected List<String> links = new ArrayList<>();
-	protected boolean visited = false;
-	protected boolean entered = false;
+
+	public GraphNode(String name, List<String> links) {
+		this.name = name;
+		this.links.addAll(links);
+	}
 
 	public GraphNode(String name, String[] links) {
-		this.name = name;
-		this.links.addAll(Arrays.asList(links));
+		this(name, Arrays.asList(links));
 	}
 }
-
